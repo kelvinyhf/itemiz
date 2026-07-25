@@ -1,4 +1,9 @@
 @import "tailwindcss";
+
+/* Define dark */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Radix Colors */
 @theme {
   
   --color-gray-1: var(--gray-1);
@@ -188,6 +193,18 @@
   --color-yellow-10: var(--yellow-10);
   --color-yellow-11: var(--yellow-11);
   --color-yellow-12: var(--yellow-12);
+  --color-yellow-a1: var(--yellow-a1);
+  --color-yellow-a2: var(--yellow-a2);
+  --color-yellow-a3: var(--yellow-a3);
+  --color-yellow-a4: var(--yellow-a4);
+  --color-yellow-a5: var(--yellow-a5);
+  --color-yellow-a6: var(--yellow-a6);
+  --color-yellow-a7: var(--yellow-a7);
+  --color-yellow-a8: var(--yellow-a8);
+  --color-yellow-a9: var(--yellow-a9);
+  --color-yellow-a10: var(--yellow-a10);
+  --color-yellow-a11: var(--yellow-a11);
+  --color-yellow-a12: var(--yellow-a12);
   
   --color-amber-1: var(--amber-1);
   --color-amber-2: var(--amber-2);
@@ -201,5 +218,102 @@
   --color-amber-10: var(--amber-10);
   --color-amber-11: var(--amber-11);
   --color-amber-12: var(--amber-12);
+  --color-amber-a1: var(--amber-a1);
+  --color-amber-a2: var(--amber-a2);
+  --color-amber-a3: var(--amber-a3);
+  --color-amber-a4: var(--amber-a4);
+  --color-amber-a5: var(--amber-a5);
+  --color-amber-a6: var(--amber-a6);
+  --color-amber-a7: var(--amber-a7);
+  --color-amber-a8: var(--amber-a8);
+  --color-amber-a9: var(--amber-a9);
+  --color-amber-a10: var(--amber-a10);
+  --color-amber-a11: var(--amber-a11);
+  --color-amber-a12: var(--amber-a12);
   
+}
+
+/* Base Styles */
+@layer base {
+  
+  html {
+    background-color: var(--white-black);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    background-color: var(--white-black);
+    color: var(--gray-12);
+    line-height: 1.5;
+  }
+  
+  :focus {
+    outline: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--gray-12);	
+  }
+  
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--white-black);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--scroll-bar-thumb);
+    border-radius: 2px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--scroll-bar-thumb-hover);
+  }
+  
+}
+
+/* Custom Variables */
+@theme {
+  --color-white-black: var(--white-black);
+  --background-image-app-bg:
+  linear-gradient(transparent 25%, var(--amber-1) 100%),
+  linear-gradient(90deg, var(--green-3), var(--blue-3));
+}
+
+:root {
+  --white-black: #fff;
+  --scroll-bar-thumb: #666;
+  --scroll-bar-thumb-hover: #444;
+}
+
+.dark {
+  --white-black: #000;
+  --scroll-bar-thumb: #ddd;
+  --scroll-bar-thumb-hover: #eee;
+}
+
+.liquid-glass {
+  background-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0px rgba(255, 255, 255, 0.8);
+  border-radius: 1.5rem;
+}
+
+.dark .liquid-glass {
+  background-color: rgba(15, 15, 20, 0.25);
+  backdrop-filter: blur(20px) saturate(190%);
+  -webkit-backdrop-filter: blur(20px) saturate(190%);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0px rgba(255, 255, 255, 0.2);
 }

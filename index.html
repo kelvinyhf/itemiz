@@ -2,6 +2,13 @@
 <html lang="en">
 <head>
   
+  <!-- Theme Detection -->
+  <script>
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+  
   <!-- Basic Meta Tags -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -78,9 +85,21 @@
   </script>
   
 </head>
-<body ontouchstart="">
-  <div id="app">
-    <h1 class="text-gray-12">Boardy</h1>
+<body class="h-screen overflow-hidden">
+  <div id="app" class="bg-app-bg h-full flex flex-col items-center">
+    
+    <nav class="liquid-glass w-[calc(100%-3rem)] flex justify-between items-center px-6 py-3 mt-6">
+      <h1 class="text-xl font-medium">Boardy</h1>
+    </nav>
+    
+    <main>
+      
+      <section class="p-8">
+        <p class="text-3xl">A deadly simple Kanban Web App. No ads. No distractions. Free forever.</p>
+      </section>
+      
+    </main>
+    
   </div>
 </body>
 </html>
