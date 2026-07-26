@@ -73,17 +73,60 @@
   <script>
   document.addEventListener('DOMContentLoaded', () => {
     const { createApp, ref, reactive, computed, watch, onMounted } = Vue;
-    createApp({
-      setup() {
-        
-      }
-    }).mount('#app');
+    const app = createApp({});
+    
+    app.component('boardy-board', {
+      template: `
+        <main class="flex gap-4 w-full h-svh overflow-x-auto overflow-y-hidden p-16 snap-x snap-mandatory no-scrollbar">
+          <slot></slot>
+        </main>
+      `
+    });
+    
+    app.component('boardy-list', {
+      props: ['title'],
+      template: `
+        <section class="liquid-glass [scroll-snap-stop:always] snap-center shrink-0 w-[80vw] rounded-2xl p-4 flex flex-col h-full">
+          <h2 class="font-semibold text-lg mb-3">{{ title }}</h2>
+          <div class="flex-1 space-y-3 overflow-y-auto">
+            <slot></slot>
+          </div>
+        </section>
+      `
+    });
+    
+    app.component('boardy-card', {
+      props: ['name', 'desc'],
+      template: `
+        <article class="bg-white-black p-3 rounded-xl shadow-sm">
+          <h3>{{ name }}</h3>
+          <p class="text-gray-11 text-sm">{{ desc }}</p>
+        </article>
+      `
+    });
+    
+    app.mount('#app');
   });
   </script>
   
 </head>
 <body>
-  <div id="app">
+  <div id="app" class="bg-[linear-gradient(transparent_25%,var(--gray-1)_100%),linear-gradient(90deg,var(--green-2),var(--blue-2))]">
+    <h1 class="sr-only">My Boards</h1>
+    
+    <boardy-board>
+      
+      <boardy-list title="To Do">
+        <boardy-card name="Task 1" desc="My first coding task"></boardy-card>
+        <boardy-card name="Task 2" desc="My second programming task"></boardy-card>
+      </boardy-list>
+      
+      <boardy-list title="Done">
+        <boardy-card name="Buggy" desc="My first css bug"></boardy-card>
+        <boardy-card name="The Start" desc="Make a commit"></boardy-card>
+      </boardy-list>
+      
+    </boardy-board>
     
   </div>
 </body>
