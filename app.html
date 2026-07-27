@@ -70,10 +70,37 @@
   
   <!-- Vue -->
   <script src="./assets/libraries/vue.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuedraggable@4.1.0/dist/vuedraggable.umd.min.js" defer></script>
   <script>
   document.addEventListener('DOMContentLoaded', () => {
     const { createApp, ref, reactive, computed, watch, onMounted } = Vue;
-    const app = createApp({});
+    const app = createApp({
+      setup() {
+        const lists = ref([
+          {
+            id: 1,
+            title: 'To Do',
+            cards: [
+              { id: 11, name: 'Fix CSS bug', desc: 'that bug u know' },
+              { id: 12, name: 'Fix JS bug', desc: 'this bug u know' }
+            ]
+          },
+          {
+            id: 2,
+            title: 'Done',
+            cards: [
+              { id: 21, name: 'Fix HTML bug', desc: 'the bug u know' },
+              { id: 22, name: 'Fix YOUR bug', desc: 'your bug u know' }
+            ]
+          }
+        ]);
+        
+        return { lists };
+      }
+    });
+    
+    app.component('draggable', window.vuedraggable);
     
     app.component('boardy-board', {
       template: `
@@ -84,13 +111,22 @@
     });
     
     app.component('boardy-list', {
-      props: ['title'],
+      props: ['title', 'cards'],
       template: `
         <section class="liquid-glass [scroll-snap-stop:always] snap-center shrink-0 w-[80vw] rounded-2xl p-4 flex flex-col h-full">
           <h2 class="font-semibold text-lg mb-3">{{ title }}</h2>
-          <div class="flex-1 space-y-3 overflow-y-auto">
-            <slot></slot>
-          </div>
+          <draggable 
+            :list="cards" 
+            group="boardy-cards" 
+            item-key="id"
+            animation="200"
+            ghost-class="opacity-30"
+            class="flex-1 space-y-3 overflow-y-auto"
+          >
+            <template #item="{ element }">
+              <boardy-card :name="element.name" :desc="element.desc">
+            </template>
+          </draggable>
         </section>
       `
     });
@@ -98,7 +134,7 @@
     app.component('boardy-card', {
       props: ['name', 'desc'],
       template: `
-        <article class="bg-white-black p-3 rounded-xl shadow-sm">
+        <article class="bg-white-black p-3 rounded-xl shadow-sm cursor-grab active:cursor-grabbing select-none">
           <h3>{{ name }}</h3>
           <p class="text-gray-11 text-sm">{{ desc }}</p>
         </article>
@@ -115,17 +151,12 @@
     <h1 class="sr-only">My Boards</h1>
     
     <boardy-board>
-      
-      <boardy-list title="To Do">
-        <boardy-card name="Task 1" desc="My first coding task"></boardy-card>
-        <boardy-card name="Task 2" desc="My second programming task"></boardy-card>
-      </boardy-list>
-      
-      <boardy-list title="Done">
-        <boardy-card name="Buggy" desc="My first css bug"></boardy-card>
-        <boardy-card name="The Start" desc="Make a commit"></boardy-card>
-      </boardy-list>
-      
+      <boardy-list 
+        v-for="list in lists" 
+        :key="list.id" 
+        :title="list.title" 
+        :cards="list.cards" 
+      />
     </boardy-board>
     
   </div>
