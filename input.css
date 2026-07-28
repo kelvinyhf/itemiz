@@ -255,7 +255,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--gray-12);	
+    outline: 1px solid var(--gray-12);
   }
   
   ::-webkit-scrollbar {

@@ -15,28 +15,30 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
   <!-- SEO Meta Tags -->
-  <title>Boardy</title>
-  <meta name="description" content="A deadly simple Kanban web app, no ads, no distractions, free forever.">
+  <title>TITLE</title>
+  <meta name="description" content="DESC">
   <meta name="author" content="KelvinY">
-  <link rel="canonical" href="https://boardy.pages.dev/">
+  <link rel="canonical" href="https://TITLE.pages.dev/">
   
   <!-- Open Graph -->
-  <meta property="og:title" content="Boardy">
-  <meta property="og:description" content="A deadly simple Kanban web app, no ads, no distractions, free forever.">
+  <meta property="og:title" content="TITLE">
+  <meta property="og:description" content="DESC">
   <meta property="og:image" content="IMAGE">
-  <meta property="og:url" content="https://boardy.pages.dev/">
+  <meta property="og:url" content="https://TITLE.pages.dev/">
   <meta property="og:type" content="website">
   
   <!-- Twitter Cards -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Boardy">
-  <meta name="twitter:description" content="A deadly simple Kanban web app, no ads, no distractions, free forever.">
+  <meta name="twitter:title" content="TITLE">
+  <meta name="twitter:description" content="DESC">
   <meta name="twitter:image" content="IMAGE">
   
   <!-- iOS Optimization -->
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
   <meta name="format-detection" content="telephone=no">
-
+  
   <!-- External Files -->
   <!-- <link rel="icon" type="image/[TYPE]+xml" sizes="any" href="FAV">
   <link rel="apple-touch-icon" href="APPLE"> -->
@@ -66,26 +68,38 @@
     }
   </script>
   
+  <!-- Vue -->
+  <script src="./assets/libraries/vue.js" defer></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const { createApp, ref, reactive, computed, watch, onMounted, onUnmounted } = Vue;
+    const app = createApp({});
+    app.mount('#app');
+  });
+  </script>
+  
 </head>
 <body class="min-h-screen pt-20 bg-[linear-gradient(transparent_25%,var(--gray-1)_100%),linear-gradient(90deg,var(--green-3),var(--blue-3))]">
-  
-  <!-- Navigation Bar -->
-  <nav class="liquid-glass rounded-2xl fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-3rem)] max-w-5xl flex justify-between items-center px-6 py-3">
-    <span class="text-xl font-medium">Boardy</span>
-  </nav>
-  
-  <main>
+  <div id="app">
     
-    <!-- Hero Section -->
-    <section class="relative p-8">
-      <h1 class="text-3xl">A deadly simple Kanban Web App. No ads. No distractions. Free forever.</h1>
-      <p class="text-xl text-gray-11 mt-4">Just your tasks, nothing else.</p>
-      <button class="block bg-gradient-to-r from-blue-a3 to-green-a3 text-md font-medium liquid-glass rounded-full px-6 py-4 mt-8">Create Your Board Now <span class="ml-1">&rarr;</span></button>
-      <button class="block liquid-glass rounded-full px-5 py-3 mt-7">Support Me <span class="ml-1">&#9825;</span></button>
-      <div class="pointer-events-none absolute top-100% left-1/2 -translate-x-1/2 rounded-[50%] w-full h-30 shadow-2xl smile-shadow"></div>
-    </section>
+    <!-- Navigation Bar -->
+    <nav class="liquid-glass rounded-2xl fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-3rem)] max-w-5xl flex justify-between items-center px-6 py-3">
+      <span class="text-xl font-medium">TITLE</span>
+    </nav>
     
-  </main>
-  
+    <main>
+      
+      <!-- Hero Section -->
+      <section class="relative p-8">
+        <h1 class="text-3xl">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</h1>
+        <p class="text-xl text-gray-11 mt-4">Curabitur sodales ligula in libero.</p>
+        <button class="block bg-gradient-to-r from-blue-a3 to-green-a3 text-md font-medium liquid-glass rounded-full px-6 py-4 mt-8">Get Started <span class="ml-1">&rarr;</span></button>
+        <button class="block liquid-glass rounded-full px-5 py-3 mt-7">Support Me <span class="ml-1">&#9825;</span></button>
+        <div class="pointer-events-none absolute top-100% left-1/2 -translate-x-1/2 rounded-[50%] w-full h-30 shadow-2xl smile-shadow"></div>
+      </section>
+      
+    </main>
+    
+  </div>
 </body>
 </html>

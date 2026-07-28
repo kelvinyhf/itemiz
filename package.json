@@ -1,5 +1,5 @@
 {
-  "name": "boardy",
+  "name": "TITLE",
   "version": "1.0.0",
   "scripts": {
     "build": "npx @tailwindcss/cli -i ./input.css -o ./output.css --minify"

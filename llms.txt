@@ -1,2 +1,2 @@
-# Boardy
-A deadly simple Kanban web app, no ads, no distractions, free forever.
+# TITLE
+DESC
