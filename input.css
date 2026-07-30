@@ -6,6 +6,26 @@
 /* Radix Colors */
 @theme {
   
+  --color-alpha-5: var(--alpha-5);
+  --color-alpha-10: var(--alpha-10);
+  --color-alpha-15: var(--alpha-15);
+  --color-alpha-20: var(--alpha-20);
+  --color-alpha-25: var(--alpha-25);
+  --color-alpha-30: var(--alpha-30);
+  --color-alpha-35: var(--alpha-35);
+  --color-alpha-40: var(--alpha-40);
+  --color-alpha-45: var(--alpha-45);
+  --color-alpha-50: var(--alpha-50);
+  --color-alpha-55: var(--alpha-55);
+  --color-alpha-60: var(--alpha-60);
+  --color-alpha-65: var(--alpha-65);
+  --color-alpha-70: var(--alpha-70);
+  --color-alpha-75: var(--alpha-75);
+  --color-alpha-80: var(--alpha-80);
+  --color-alpha-85: var(--alpha-85);
+  --color-alpha-90: var(--alpha-90);
+  --color-alpha-95: var(--alpha-95);
+  
   --color-gray-1: var(--gray-1);
   --color-gray-2: var(--gray-2);
   --color-gray-3: var(--gray-3);
@@ -293,6 +313,10 @@
   --white-black: #000;
   --scroll-bar-thumb: #ddd;
   --scroll-bar-thumb-hover: #eee;
+}
+
+[v-cloak] {
+  display: none !important;
 }
 
 @utility liquid-glass {

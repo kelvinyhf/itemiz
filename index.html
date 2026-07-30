@@ -64,42 +64,76 @@
         })
         .catch(err => console.error(err));
     } else {
-      document.write('<link rel="stylesheet" href="./output.css">');
+      
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = './output.css';
+      document.head.appendChild(link);
+      
     }
   </script>
   
-  <!-- Vue -->
-  <script src="./assets/libraries/vue.js" defer></script>
-  <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const { createApp, ref, reactive, computed, watch, onMounted, onUnmounted } = Vue;
-    const app = createApp({});
-    app.mount('#app');
-  });
-  </script>
+  <!-- Petite Vue -->
+  <script src="./assets/libraries/petite-vue.js" defer></script>
+  <script src="./script.js" defer></script>
   
 </head>
-<body class="min-h-screen pt-20 bg-[linear-gradient(transparent_25%,var(--gray-1)_100%),linear-gradient(90deg,var(--green-3),var(--blue-3))]">
-  <div id="app">
+<body v-scope v-cloak class="h-screen bg-gray-1">
+  
+  <main class="h-full">
     
-    <!-- Navigation Bar -->
-    <nav class="liquid-glass rounded-2xl fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-3rem)] max-w-5xl flex justify-between items-center px-6 py-3">
-      <span class="text-xl font-medium">TITLE</span>
-    </nav>
+    <section></section>
     
-    <main>
-      
-      <!-- Hero Section -->
-      <section class="relative p-8">
-        <h1 class="text-3xl">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</h1>
-        <p class="text-xl text-gray-11 mt-4">Curabitur sodales ligula in libero.</p>
-        <button class="block bg-gradient-to-r from-blue-a3 to-green-a3 text-md font-medium liquid-glass rounded-full px-6 py-4 mt-8">Get Started <span class="ml-1">&rarr;</span></button>
-        <button class="block liquid-glass rounded-full px-5 py-3 mt-7">Support Me <span class="ml-1">&#9825;</span></button>
-        <div class="pointer-events-none absolute top-100% left-1/2 -translate-x-1/2 rounded-[50%] w-full h-30 shadow-2xl smile-shadow"></div>
-      </section>
-      
-    </main>
+    <!-- Items -->
+    <section class="flex-1 flex flex-col">
+      <label v-for="item in items" class="bg-white-black px-8 py-4 border-b border-gray-4 flex items-center gap-4">
+        <input type="checkbox" v-model="item.completed" :class="{ 'opacity-50': item.completed }">
+        <div :class="{ 'opacity-50': item.completed }">
+          <h2
+            contenteditable="true"
+            @blur="item.title = $event.target.innerText.trim()"
+            @keydown.enter.prevent="$event.target.blur()"
+            class="text-lg font-medium outline-none focus-visible:shadow-[0_1px_var(--color-alpha-50)]"
+          >
+            {{ item.title }}
+          </h2>
+          <p
+            contenteditable="true"
+            @blur="item.desc = $event.target.innerText.trim()"
+            @keydown.enter.prevent="$event.target.blur()"
+            class="outline-none focus-visible:shadow-[0_1px_var(--color-alpha-25)]"
+          >
+            {{ item.desc }}
+          </p>
+        </div>
+      </label>
+    </section>
     
-  </div>
+    <section></section>
+    
+  </main>
+  
 </body>
 </html>
+
+<!-- Landing Page
+  
+  // Navigation Bar
+  <nav class="liquid-glass rounded-2xl fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-3rem)] max-w-5xl flex justify-between items-center px-6 py-3">
+    <span class="text-xl font-medium">TITLE</span>
+  </nav>
+  
+  <main>
+    
+    // Hero Section
+    <section class="relative p-8">
+      <h1 class="text-3xl">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</h1>
+      <p class="text-xl text-gray-11 mt-4">Curabitur sodales ligula in libero.</p>
+      <button class="block bg-gray-5 text-md font-medium liquid-glass rounded-full px-6 py-4 mt-8">Get Started <span class="ml-1">&rarr;</span></button>
+      <button class="block liquid-glass rounded-full px-5 py-3 mt-7">Support Me <span class="ml-1">&#9825;</span></button>
+      <div class="pointer-events-none absolute top-100% left-1/2 -translate-x-1/2 rounded-[50%] w-full h-30 shadow-2xl smile-shadow"></div>
+    </section>
+    
+  </main>
+  
+-->
