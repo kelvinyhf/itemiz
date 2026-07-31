@@ -15,21 +15,21 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
   <!-- SEO Meta Tags -->
-  <title>TITLE</title>
+  <title>Notick</title>
   <meta name="description" content="DESC">
   <meta name="author" content="KelvinY">
-  <link rel="canonical" href="https://TITLE.pages.dev/">
+  <link rel="canonical" href="https://notick.pages.dev/">
   
   <!-- Open Graph -->
-  <meta property="og:title" content="TITLE">
+  <meta property="og:title" content="Notick">
   <meta property="og:description" content="DESC">
   <meta property="og:image" content="IMAGE">
-  <meta property="og:url" content="https://TITLE.pages.dev/">
+  <meta property="og:url" content="https://notick.pages.dev/">
   <meta property="og:type" content="website">
   
   <!-- Twitter Cards -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="TITLE">
+  <meta name="twitter:title" content="Notick">
   <meta name="twitter:description" content="DESC">
   <meta name="twitter:image" content="IMAGE">
   
@@ -86,25 +86,38 @@
     
     <!-- Items -->
     <section class="flex-1 flex flex-col">
-      <label v-for="item in items" class="bg-white-black px-8 py-4 border-b border-gray-4 flex items-center gap-4">
-        <input type="checkbox" v-model="item.completed" :class="{ 'opacity-50': item.completed }">
+      <div v-for="item in items" :key="item.id" class="bg-white-black px-8 py-4 border-b border-gray-4 flex items-center gap-4">
+        
+        <!-- Checkbox -->
+        <input type="checkbox" v-model="item.completed" @change="save()" :class="{ 'opacity-50': item.completed }">
+        
+        <!-- Title and Description -->
         <div :class="{ 'opacity-50': item.completed }">
           <h2
             contenteditable="true"
-            data-placeholder="Click to edit title..."
+            data-placeholder="Click to Edit"
+            v-text="item.title"
             @blur="item.title = $event.target.innerText.trim(); save()"
             @keydown.enter.prevent="$event.target.blur()"
             class="text-lg font-medium outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-11 empty:before:pointer-events-none"
-          >{{ item.title }}</h2>
+          ></h2>
           <p
             contenteditable="true"
-            data-placeholder="Click to edit description..."
+            data-placeholder="Click to Edit"
+            v-text="item.desc"
             @blur="item.desc = $event.target.innerText.trim(); save()"
             @keydown.enter.prevent="$event.target.blur()"
             class="outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-11 empty:before:pointer-events-none"
-          >{{ item.desc }}</p>
+          ></p>
         </div>
-      </label>
+        
+        <!-- Delete Button -->
+        <button 
+          @click.stop.prevent="deleteItem(item.id)"
+          class="text-red-11 ml-auto cursor-pointer"
+        >X</button>
+        
+      </div>
     </section>
     
     <!-- Add Item -->
