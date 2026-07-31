@@ -80,7 +80,7 @@
 </head>
 <body v-scope v-cloak class="h-screen bg-gray-1">
   
-  <main class="h-full">
+  <main class="h-full flex flex-col justify-between">
     
     <section></section>
     
@@ -91,25 +91,26 @@
         <div :class="{ 'opacity-50': item.completed }">
           <h2
             contenteditable="true"
-            @blur="item.title = $event.target.innerText.trim()"
+            data-placeholder="Click to edit title..."
+            @blur="item.title = $event.target.innerText.trim(); save()"
             @keydown.enter.prevent="$event.target.blur()"
-            class="text-lg font-medium outline-none focus-visible:shadow-[0_1px_var(--color-alpha-50)]"
-          >
-            {{ item.title }}
-          </h2>
+            class="text-lg font-medium outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-11 empty:before:pointer-events-none"
+          >{{ item.title }}</h2>
           <p
             contenteditable="true"
-            @blur="item.desc = $event.target.innerText.trim()"
+            data-placeholder="Click to edit description..."
+            @blur="item.desc = $event.target.innerText.trim(); save()"
             @keydown.enter.prevent="$event.target.blur()"
-            class="outline-none focus-visible:shadow-[0_1px_var(--color-alpha-25)]"
-          >
-            {{ item.desc }}
-          </p>
+            class="outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-11 empty:before:pointer-events-none"
+          >{{ item.desc }}</p>
         </div>
       </label>
     </section>
     
-    <section></section>
+    <!-- Add Item -->
+    <section class="fixed bottom-0 left-1/2 -translate-x-1/2 z-99 flex justify-center pb-8">
+      <button @click="addItem" class="block liquid-glass rounded-full px-4 py-2">Add Item</button>
+    </section>
     
   </main>
   
@@ -119,7 +120,7 @@
 <!-- Landing Page
   
   // Navigation Bar
-  <nav class="liquid-glass rounded-2xl fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-3rem)] max-w-5xl flex justify-between items-center px-6 py-3">
+  <nav class="liquid-glass rounded-2xl fixed top-6 left-1/2 -translate-x-1/2 z-99 w-[calc(100%-3rem)] max-w-5xl flex justify-between items-center px-6 py-3">
     <span class="text-xl font-medium">TITLE</span>
   </nav>
   
