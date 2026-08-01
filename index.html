@@ -75,18 +75,19 @@
   
   <!-- Petite Vue -->
   <script src="./assets/libraries/petite-vue.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js" defer></script>
   <script src="./script.js" defer></script>
   
 </head>
-<body v-scope v-cloak class="h-screen bg-gray-1">
+<body v-scope v-cloak class="w-screen h-screen bg-gray-1">
   
   <main class="h-full flex flex-col justify-between">
     
     <section></section>
     
     <!-- Items -->
-    <section class="flex-1 flex flex-col">
-      <div v-for="item in items" :key="item.id" class="bg-white-black px-8 py-4 border-b border-gray-4 flex items-center gap-4">
+    <section class="items-container flex-1 flex flex-col">
+      <div v-for="item in items" :key="item.id" class="item bg-white-black px-8 py-4 border-b border-gray-4 flex items-center gap-4 cursor-grab">
         
         <!-- Checkbox -->
         <input type="checkbox" v-model="item.completed" @change="save()" :class="{ 'opacity-50': item.completed }">
@@ -114,7 +115,7 @@
         <!-- Delete Button -->
         <button 
           @click.stop.prevent="deleteItem(item.id)"
-          class="text-red-11 ml-auto cursor-pointer"
+          class="text-red-11 ml-auto cursor-pointer select-none"
         >X</button>
         
       </div>

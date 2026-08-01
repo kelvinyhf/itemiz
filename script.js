@@ -37,3 +37,38 @@ const state = PetiteVue.reactive({
 
 // Create App
 PetiteVue.createApp(state).mount('body');
+
+// SortableJS
+document.querySelectorAll('.items-container').forEach(container => {
+  Sortable.create(container, {
+    animation: 200,
+    handle: '.item',
+    
+    // Sortable Classes
+    chosenClass: 'sortable-chosen',
+    fallbackClass: 'sortable-fallback',
+    ghostClass: 'sortable-ghost',
+    forceFallback: true,
+    fallbackOnBody: true,
+    
+    // Delay
+    delay: 250,
+    delayOnTouchOnly: true,
+    touchStartThreshold: 5,
+    
+    // Haptic Feedback
+    onChoose() {
+      if (navigator.vibrate) {
+        navigator.vibrate(30);
+      }
+    },
+    
+    // Change Position
+    onEnd(evt) {
+      const movedItem = state.items.splice(evt.oldIndex, 1)[0];
+      state.items.splice(evt.newIndex, 0, movedItem);
+      state.save();
+    }
+    
+  });
+});
