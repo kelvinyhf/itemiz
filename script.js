@@ -1,16 +1,43 @@
-// Variables
+// ------------------------------
+// Variables and Helpers
+// ------------------------------
 const STORAGE_KEY = "Notick_v1";
 
-// Functions
-const generateId = () => Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+// Generate random Id for items
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+}
 
-// State
+// ------------------------------
+// DOM Elements
+// ------------------------------
+const itemContainer = document.querySelectorAll('.items-container');
+const bottomBar = document.getElementById('bottom-bar');
+const addItem = document.getElementById('add-item');
+const editModal = document.getElementById('edit-modal');
+const trashCan = document.getElementById('trash-can');
+
+// ------------------------------
+// DOM Helpers
+// ------------------------------
+function showBottomBarChild(target) {
+  Array.from(bottomBar.children).forEach(child => {
+    child.classList.add('hidden');
+  });
+  if (target) {
+    target.classList.remove('hidden');
+  }
+}
+
+// ------------------------------
+// PetiteVue State
+// ------------------------------
 const state = PetiteVue.reactive({
   
   // Items Object
   items: JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
-    { id: generateId(), title: 'Item 1', desc: 'My first item!', completed: false },
-    { id: generateId(), title: 'Item 2', desc: 'My second item!', completed: false }
+    { id: generateId(), title: "Click to edit!", desc: "Can add description too", completed: false },
+    { id: generateId(), title: "That's it!", desc: "Hope you like it", completed: true }
   ],
   
   // Save
@@ -31,6 +58,30 @@ const state = PetiteVue.reactive({
   deleteItem(id) {
     this.items = this.items.filter(item => item.id !== id);
     this.save();
+  },
+  
+  // Edit Modal functions
+  editingItem: { id: "", title: "", desc: "", completed: false },
+  openEditModal(item) {
+    this.editingItem = { ...item };
+    showBottomBarChild(editModal);
+  },
+  closeEditModal() {
+    this.editingItem = { id: "", title: "", desc: "", completed: false };
+    showBottomBarChild(addItem);
+  },
+  saveEditModal() {
+    if (!this.editingItem) return;
+    
+    // Find the actual item (via id) and save it
+    const index = this.items.findIndex(i => i.id === this.editingItem.id);
+    if (index !== -1) {
+      this.items[index].title = this.editingItem.title.trim();
+      this.items[index].desc = this.editingItem.desc.trim();
+      this.save();
+    }
+    
+    this.closeEditModal();
   }
   
 });
@@ -38,11 +89,9 @@ const state = PetiteVue.reactive({
 // Create App
 PetiteVue.createApp(state).mount('body');
 
+// ------------------------------
 // SortableJS
-const itemContainer = document.querySelectorAll('.items-container');
-const addItem = document.getElementById('add-item');
-const trashCan = document.getElementById('trash-can');
-
+// ------------------------------
 itemContainer.forEach(container => {
   Sortable.create(container, {
     
@@ -65,8 +114,7 @@ itemContainer.forEach(container => {
     // UI Appearance when dragging
     onChoose() {
       if ('vibrate' in navigator) navigator.vibrate(30);
-      addItem.classList.add('hidden');
-      trashCan.classList.remove('hidden');
+      showBottomBarChild(trashCan);
     },
     onUnchoose() {
       // [BUG TO BE FIXED]
@@ -106,9 +154,7 @@ itemContainer.forEach(container => {
         
       }
       
-      // Adjust UI
-      addItem.classList.remove('hidden');
-      trashCan.classList.add('hidden');
+      showBottomBarChild(addItem);
       
     }
     
