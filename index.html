@@ -75,11 +75,11 @@
   
   <!-- Petite Vue -->
   <script src="./assets/libraries/petite-vue.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js" defer></script>
+  <script src="./assets/libraries/sortable.js" defer></script>
   <script src="./script.js" defer></script>
   
 </head>
-<body v-scope v-cloak class="w-screen h-screen bg-gray-1">
+<body v-scope v-cloak class="w-screen h-screen bg-gray-1 select-none">
   
   <main class="h-full flex flex-col justify-between">
     
@@ -112,43 +112,16 @@
           ></p>
         </div>
         
-        <!-- Delete Button -->
-        <button 
-          @click.stop.prevent="deleteItem(item.id)"
-          class="text-red-11 ml-auto cursor-pointer select-none"
-        >X</button>
-        
       </div>
     </section>
     
-    <!-- Add Item -->
-    <section class="fixed bottom-0 left-1/2 -translate-x-1/2 z-99 flex justify-center pb-8">
-      <button @click="addItem" class="block liquid-glass rounded-full px-4 py-2">Add Item</button>
+    <!-- Bottom Bar -->
+    <section class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full h-[100px] z-99 flex justify-center items-center bg-gradient-to-b from-transparent to-gray-a3">
+      <div id="trash-can" class="absolute top-0 left-0 w-[calc(100%-2rem)] h-[calc(100%-2rem)] m-4 bg-red-a2 border-2 border-dashed border-red-4 rounded-md text-red-9 text-sm hidden flex justify-center items-center">Drop here to delete</div>
+      <button id="add-item" @click="addItem" class="touch-manipulation block liquid-glass rounded-full px-4 py-2">Add Item</button>
     </section>
     
   </main>
   
 </body>
 </html>
-
-<!-- Landing Page
-  
-  // Navigation Bar
-  <nav class="liquid-glass rounded-2xl fixed top-6 left-1/2 -translate-x-1/2 z-99 w-[calc(100%-3rem)] max-w-5xl flex justify-between items-center px-6 py-3">
-    <span class="text-xl font-medium">TITLE</span>
-  </nav>
-  
-  <main>
-    
-    // Hero Section
-    <section class="relative p-8">
-      <h1 class="text-3xl">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</h1>
-      <p class="text-xl text-gray-11 mt-4">Curabitur sodales ligula in libero.</p>
-      <button class="block bg-gray-5 text-md font-medium liquid-glass rounded-full px-6 py-4 mt-8">Get Started <span class="ml-1">&rarr;</span></button>
-      <button class="block liquid-glass rounded-full px-5 py-3 mt-7">Support Me <span class="ml-1">&#9825;</span></button>
-      <div class="pointer-events-none absolute top-100% left-1/2 -translate-x-1/2 rounded-[50%] w-full h-30 shadow-2xl smile-shadow"></div>
-    </section>
-    
-  </main>
-  
--->

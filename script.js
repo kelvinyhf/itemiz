@@ -39,9 +39,15 @@ const state = PetiteVue.reactive({
 PetiteVue.createApp(state).mount('body');
 
 // SortableJS
-document.querySelectorAll('.items-container').forEach(container => {
+const itemContainer = document.querySelectorAll('.items-container');
+const addItem = document.getElementById('add-item');
+const trashCan = document.getElementById('trash-can');
+
+itemContainer.forEach(container => {
   Sortable.create(container, {
-    animation: 200,
+    
+    // Basic Settings
+    animation: 250,
     handle: '.item',
     
     // Sortable Classes
@@ -56,18 +62,54 @@ document.querySelectorAll('.items-container').forEach(container => {
     delayOnTouchOnly: true,
     touchStartThreshold: 5,
     
-    // Haptic Feedback
+    // UI Appearance when dragging
     onChoose() {
-      if (navigator.vibrate) {
-        navigator.vibrate(30);
-      }
+      if ('vibrate' in navigator) navigator.vibrate(30);
+      addItem.classList.add('hidden');
+      trashCan.classList.remove('hidden');
+    },
+    onUnchoose() {
+      // [BUG TO BE FIXED]
     },
     
-    // Change Position
+    // Move item or delete item
     onEnd(evt) {
-      const movedItem = state.items.splice(evt.oldIndex, 1)[0];
-      state.items.splice(evt.newIndex, 0, movedItem);
-      state.save();
+      const ogEvt = evt.originalEvent;
+      let touchX = 0;
+      let touchY = 0;
+      
+      // Touch screen and cursor
+      if (ogEvt.changedTouches && ogEvt.changedTouches.length > 0) {
+        touchX = ogEvt.changedTouches[0].clientX;
+        touchY = ogEvt.changedTouches[0].clientY;
+      } else {
+        touchX = ogEvt.clientX;
+        touchY = ogEvt.clientY;
+      }
+      
+      const dropTarget = document.elementFromPoint(touchX, touchY);
+      const isDroppedInTrash = trashCan.contains(dropTarget);
+      
+      if (isDroppedInTrash) {
+        
+        // Delete, save, and vibrate
+        state.items.splice(evt.oldIndex, 1);
+        state.save();
+        if ('vibrate' in navigator) navigator.vibrate([20, 50, 20]);
+        
+      } else {
+        
+        // Move and save
+        const movedItem = state.items.splice(evt.oldIndex, 1)[0];
+        state.items.splice(evt.newIndex, 0, movedItem);
+        state.save();
+        
+      }
+      
+      // Adjust UI
+      addItem.classList.remove('hidden');
+      trashCan.classList.add('hidden');
+      
     }
     
   });
