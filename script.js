@@ -60,14 +60,22 @@ const state = PetiteVue.reactive({
     this.save();
   },
   
+  // Overlay
+  showingOverlay: false,
+  onOverlayClick() {
+    this.closeEditModal();
+  },
+  
   // Edit Modal functions
   editingItem: { id: "", title: "", desc: "", completed: false },
   openEditModal(item) {
     this.editingItem = { ...item };
+    this.showingOverlay = true;
     showBottomBarChild(editModal);
   },
   closeEditModal() {
     this.editingItem = { id: "", title: "", desc: "", completed: false };
+    this.showingOverlay = false;
     showBottomBarChild(addItem);
   },
   saveEditModal() {
