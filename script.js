@@ -11,7 +11,7 @@ function generateId() {
 // ------------------------------
 // DOM Elements
 // ------------------------------
-const itemContainer = document.querySelectorAll('.items-container');
+const itemsContainer = document.querySelectorAll('.items-container');
 const bottomBar = document.getElementById('bottom-bar');
 const addItem = document.getElementById('add-item');
 const editModal = document.getElementById('edit-modal');
@@ -47,13 +47,22 @@ const state = PetiteVue.reactive({
   
   // Add and Delete Item
   addItem() {
-    this.items.push({
-      id: generateId(),
-      title: '',
-      desc: '',
-      completed: false
-    });
+    const newItem = { id: generateId(), title: "", desc: "", completed: false };
+    this.items.push(newItem);
     this.save();
+    
+    // Open Edit Modal and auto scroll
+    this.pressStartTime = Date.now();
+    this.openEditModal(newItem);
+    PetiteVue.nextTick(() => {
+      itemsContainer.forEach(container => {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth'
+        });
+      });
+    });
+    
   },
   deleteItem(id) {
     this.items = this.items.filter(item => item.id !== id);
@@ -67,18 +76,38 @@ const state = PetiteVue.reactive({
   },
   
   // Edit Modal functions
+  pressStartTime: null,
+  isMouse: false,
   editingItem: { id: "", title: "", desc: "", completed: false },
+  
+  // When pointer is down, start counting and check pointer type
+  onItemPointerDown(evt) {
+    this.isMouse = evt.pointerType === 'mouse';
+    this.pressStartTime = Date.now();
+  },
+  
   openEditModal(item) {
+    
+    // If it's hold (>200ms) and it's not mouse, return
+    if ((Date.now() - this.pressStartTime > 200) && !this.isMouse) return;
+    
+    // Target the item (via editingItem), show overlay and edit modal
     this.editingItem = { ...item };
     this.showingOverlay = true;
     showBottomBarChild(editModal);
+    
   },
+  
+  // Reset editingItem, hide overlay and edit modal
   closeEditModal() {
     this.editingItem = { id: "", title: "", desc: "", completed: false };
     this.showingOverlay = false;
     showBottomBarChild(addItem);
   },
+  
   saveEditModal() {
+    
+    // Return if not editing
     if (!this.editingItem) return;
     
     // Find the actual item (via id) and save it
@@ -100,7 +129,7 @@ PetiteVue.createApp(state).mount('body');
 // ------------------------------
 // SortableJS
 // ------------------------------
-itemContainer.forEach(container => {
+itemsContainer.forEach(container => {
   Sortable.create(container, {
     
     // Basic Settings

@@ -79,7 +79,7 @@
   <script src="./script.js" defer></script>
   
 </head>
-<body v-scope v-cloak class="w-screen h-screen bg-gray-1 select-none">
+<body v-scope v-cloak class="w-screen h-screen overflow-hidden bg-gray-1 select-none">
   
   <!-- Overlay -->
   <div
@@ -93,11 +93,11 @@
     <section></section>
     
     <!-- Items -->
-    <section class="items-container pb-32 flex-1 flex flex-col">
-      <div v-for="item in items" :key="item.id" @click="openEditModal(item)" class="item bg-white-black px-8 py-4 border-b border-gray-4 flex items-center gap-4 cursor-grab">
+    <section class="items-container flex-1 flex flex-col overflow-y-auto">
+      <div v-for="item in items" :key="item.id" @pointerdown="onItemPointerDown($event)" @click="openEditModal(item)" class="item bg-white-black px-8 py-4 last:mb-32 border-b border-gray-4 flex items-center gap-4 cursor-grab">
         
         <!-- Checkbox -->
-        <input type="checkbox" v-model="item.completed" @change="save()" @click.stop :class="{ 'opacity-50': item.completed }">
+        <input type="checkbox" v-model="item.completed" @change="save()" @pointerdown.stop @click.stop :class="{ 'opacity-50': item.completed }">
         
         <!-- Title and Description -->
         <div :class="{ 'opacity-50': item.completed }">
@@ -117,17 +117,17 @@
       </div>
       
       <!-- Add Item Button -->
-      <button id="add-item" @click="addItem" class="touch-manipulation block bg-white-black rounded-full px-4 py-2">Add Item</button>
+      <button id="add-item" @click="addItem()" class="touch-manipulation block bg-white-black rounded-full px-4 py-2">Add Item</button>
       
       <!-- Edit Modal -->
-      <div id="edit-modal" class="w-full bg-white-black p-4 rounded-xl hidden flex flex-col gap-4">
+      <div id="edit-modal" class="w-full bg-white-black p-4 rounded-t-2xl hidden flex flex-col gap-4">
         
         <!-- Title Input -->
         <input
           type="text"
           v-model="editingItem.title"
           placeholder="Untitled"
-          class="bg-gray-3 border border-gray-5 rounded-lg p-2 outline-none focus-visible:border-gray-12"
+          class="bg-gray-3 border border-gray-5 rounded-xl p-2 outline-none focus-visible:border-gray-12"
         >
         
         <!-- Description Input -->
@@ -135,13 +135,13 @@
           v-model="editingItem.desc"
           placeholder="Description (Optional)"
           rows="3"
-          class="bg-gray-3 border border-gray-5 rounded-lg p-2 outline-none focus-visible:border-gray-12 resize-none"
+          class="bg-gray-3 border border-gray-5 rounded-xl p-2 outline-none focus-visible:border-gray-12 resize-none"
         ></textarea>
         
         <!-- Save Button -->
         <button 
           @click="saveEditModal()" 
-          class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-lg"
+          class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl"
         >Save</button>
         
     </section>
