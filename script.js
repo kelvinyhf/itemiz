@@ -3,6 +3,16 @@
 // ------------------------------
 const STORAGE_KEY = "Notick_v1";
 
+// Color palette for item colors
+const PALETTE = {
+  none: "bg-white-black",
+  red: "bg-[color-mix(in_srgb,var(--color-red-1),var(--color-red-2))]",
+  orange: "bg-[color-mix(in_srgb,var(--color-orange-1),var(--color-orange-2))]",
+  green: "bg-[color-mix(in_srgb,var(--color-green-1),var(--color-green-2))]",
+  blue: "bg-[color-mix(in_srgb,var(--color-blue-1),var(--color-blue-2))]",
+  iris: "bg-[color-mix(in_srgb,var(--color-iris-1),var(--color-iris-2))]"
+};
+
 // Generate random Id for items
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
@@ -36,8 +46,20 @@ const state = PetiteVue.reactive({
   
   // Items Object
   items: JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
-    { id: generateId(), title: "Click to edit!", desc: "Can add description too", completed: false },
-    { id: generateId(), title: "That's it!", desc: "Hope you like it", completed: true }
+    {
+      id: generateId(),
+      title: "Click to edit!",
+      desc: "Can add description too",
+      color: "none",
+      completed: false
+    },
+    {
+      id: generateId(),
+      title: "That's it!",
+      desc: "Hope you like it",
+      color: "none",
+      completed: true
+    }
   ],
   
   // Save
@@ -47,7 +69,7 @@ const state = PetiteVue.reactive({
   
   // Add and Delete Item
   addItem() {
-    const newItem = { id: generateId(), title: "", desc: "", completed: false };
+    const newItem = { id: generateId(), title: "", desc: "", color: "none", completed: false };
     this.items.push(newItem);
     this.save();
     
@@ -55,6 +77,7 @@ const state = PetiteVue.reactive({
     this.pressStartTime = Date.now();
     this.openEditModal(newItem);
     PetiteVue.nextTick(() => {
+      // IMPROVEMENTS when there's multiple container
       itemsContainer.forEach(container => {
         container.scrollTo({
           top: container.scrollHeight,
@@ -78,7 +101,7 @@ const state = PetiteVue.reactive({
   // Edit Modal functions
   pressStartTime: null,
   isMouse: false,
-  editingItem: { id: "", title: "", desc: "", completed: false },
+  editingItem: { id: "", title: "", desc: "", color: "none", completed: false },
   
   // When pointer is down, start counting and check pointer type
   onItemPointerDown(evt) {
@@ -100,7 +123,7 @@ const state = PetiteVue.reactive({
   
   // Reset editingItem, hide overlay and edit modal
   closeEditModal() {
-    this.editingItem = { id: "", title: "", desc: "", completed: false };
+    this.editingItem = { id: "", title: "", desc: "", color: "none", completed: false };
     this.showingOverlay = false;
     showBottomBarChild(addItem);
   },
@@ -115,6 +138,7 @@ const state = PetiteVue.reactive({
     if (index !== -1) {
       this.items[index].title = this.editingItem.title.trim();
       this.items[index].desc = this.editingItem.desc.trim();
+      this.items[index].color = this.editingItem.color;
       this.save();
     }
     
@@ -148,13 +172,20 @@ itemsContainer.forEach(container => {
     delayOnTouchOnly: true,
     touchStartThreshold: 5,
     
+    // Auto Scroll
+    scroll: true,
+    scrollSensitivity: 150, // IMPROVEMENTS when auto scrolling down (trash can problem)
+    scrollSpeed: 10,
+    
     // UI Appearance when dragging
     onChoose() {
       if ('vibrate' in navigator) navigator.vibrate(30);
       showBottomBarChild(trashCan);
     },
     onUnchoose() {
-      // [BUG TO BE FIXED]
+      setTimeout(() => {
+        showBottomBarChild(addItem);
+      }, 0);
     },
     
     // Move item or delete item
@@ -190,8 +221,6 @@ itemsContainer.forEach(container => {
         state.save();
         
       }
-      
-      showBottomBarChild(addItem);
       
     }
     

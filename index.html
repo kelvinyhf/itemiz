@@ -94,10 +94,19 @@
     
     <!-- Items -->
     <section class="items-container flex-1 flex flex-col overflow-y-auto">
-      <div v-for="item in items" :key="item.id" @pointerdown="onItemPointerDown($event)" @click="openEditModal(item)" class="item bg-white-black px-8 py-4 last:mb-32 border-b border-gray-4 flex items-center gap-4 cursor-grab">
+      <div
+        v-for="item in items"
+        :key="item.id"
+        @pointerdown="onItemPointerDown($event)"
+        @click="openEditModal(item)"
+        :class="PALETTE[item.color] || PALETTE['none']"
+        class="item p-4 last:mb-32 border-b border-gray-4 flex items-center gap-2 cursor-grab"
+      >
         
         <!-- Checkbox -->
-        <input type="checkbox" v-model="item.completed" @change="save()" @pointerdown.stop @click.stop :class="{ 'opacity-50': item.completed }">
+        <label @pointerdown.stop @click.stop class="flex justify-center items-center px-4 h-full">
+          <input type="checkbox" v-model="item.completed" @change="save()" :class="{ 'opacity-50': item.completed }">
+        </label>
         
         <!-- Title and Description -->
         <div :class="{ 'opacity-50': item.completed }">
@@ -133,10 +142,24 @@
         <!-- Description Input -->
         <textarea
           v-model="editingItem.desc"
-          placeholder="Description (Optional)"
+          placeholder="Description (optional)"
           rows="3"
           class="bg-gray-3 border border-gray-5 rounded-xl p-2 outline-none focus-visible:border-gray-12 resize-none"
         ></textarea>
+        
+        <!-- Color Selection -->
+        <div class="flex justify-center items-center gap-4 py-2">
+          <input
+            type="radio"
+            v-for="(colorClass, colorKey) in PALETTE"
+            :key="colorKey"
+            :name="editingItem.id"
+            :value="colorKey"
+            v-model="editingItem.color"
+            :class="colorClass.replace(/[12]/, '3')"
+            class="w-6 h-6 rounded-full ring-1 ring-offset-1 ring-gray-3 appearance-none cursor-pointer transition-transform checked:ring-offset-2 checked:ring-gray-9 checked:scale-120"
+          >
+        </div>
         
         <!-- Save Button -->
         <button 
