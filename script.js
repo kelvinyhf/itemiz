@@ -5,12 +5,42 @@ const STORAGE_KEY = "Notick_v1";
 
 // Color palette for item colors
 const PALETTE = {
-  none: "var(--white-black)",
-  red: "color-mix(in srgb, var(--red-1), var(--red-2))",
-  orange: "color-mix(in srgb, var(--orange-1), var(--orange-2))",
-  green: "color-mix(in srgb, var(--green-1), var(--green-2))",
-  blue: "color-mix(in srgb, var(--blue-1), var(--blue-2))",
-  iris: "color-mix(in srgb, var(--iris-1), var(--iris-2))"
+  none: {
+    itemColor: "var(--white-black)",
+    previewColor: "var(--white-black)",
+    textColor: "var(--gray-12)",
+    borderColor: "var(--gray-4)"
+  },
+  red: {
+    itemColor: "color-mix(in srgb, var(--red-1), var(--red-2))",
+    previewColor: "var(--red-3)",
+    textColor: "var(--red-12)",
+    borderColor: "var(--red-4)"
+  },
+  orange: {
+    itemColor: "color-mix(in srgb, var(--orange-1), var(--orange-2))",
+    previewColor: "var(--orange-3)",
+    textColor: "var(--orange-12)",
+    borderColor: "var(--orange-4)"
+  },
+  green: {
+    itemColor: "color-mix(in srgb, var(--green-1), var(--green-2))",
+    previewColor: "var(--green-3)",
+    textColor: "var(--green-12)",
+    borderColor: "var(--green-4)"
+  },
+  blue: {
+    itemColor: "color-mix(in srgb, var(--blue-1), var(--blue-2))",
+    previewColor: "var(--blue-3)",
+    textColor: "var(--blue-12)",
+    borderColor: "var(--blue-4)"
+  },
+  iris: {
+    itemColor: "color-mix(in srgb, var(--iris-1), var(--iris-2))",
+    previewColor: "var(--iris-3)",
+    textColor: "var(--iris-12)",
+    borderColor: "var(--iris-4)"
+  }
 };
 
 // Generate random Id for items
@@ -52,6 +82,7 @@ const state = PetiteVue.reactive({
       title: "Click to edit!",
       desc: "Can add description too",
       color: "none",
+      date: "",
       completed: false
     },
     {
@@ -59,6 +90,7 @@ const state = PetiteVue.reactive({
       title: "That's it!",
       desc: "Hope you like it",
       color: "none",
+      date: "",
       completed: true
     }
   ],
@@ -70,7 +102,7 @@ const state = PetiteVue.reactive({
   
   // Add and Delete Item
   addItem() {
-    const newItem = { id: generateId(), title: "", desc: "", color: "none", completed: false };
+    const newItem = { id: generateId(), title: "", desc: "", color: "none", date: "", completed: false };
     this.items.push(newItem);
     this.save();
     
@@ -102,7 +134,7 @@ const state = PetiteVue.reactive({
   // Edit Modal functions
   pressStartTime: null,
   isDragging: false,
-  editingItem: { id: "", title: "", desc: "", color: "none", completed: false },
+  editingItem: { id: "", title: "", desc: "", color: "none", date: "", completed: false },
   
   // When pointer is down, start counting
   onItemPointerDown(evt) {
@@ -126,7 +158,7 @@ const state = PetiteVue.reactive({
   
   // Reset editingItem, hide overlay and edit modal
   closeEditModal() {
-    this.editingItem = { id: "", title: "", desc: "", color: "none", completed: false };
+    this.editingItem = { id: "", title: "", desc: "", color: "none", date: "", completed: false };
     this.showingOverlay = false;
     showBottomBarChild(addItem);
   },
@@ -138,14 +170,36 @@ const state = PetiteVue.reactive({
     
     // Find the actual item (via id) and save it
     const index = this.items.findIndex(i => i.id === this.editingItem.id);
+    
+    // Loop through all keys and save
     if (index !== -1) {
-      this.items[index].title = this.editingItem.title.trim();
-      this.items[index].desc = this.editingItem.desc.trim();
-      this.items[index].color = this.editingItem.color;
+      Object.keys(this.editingItem).forEach(key => {
+        const value = this.editingItem[key];
+        this.items[index][key] = typeof value === 'string' ? value.trim() : value;
+      });
       this.save();
     }
     
+    // Close edit modal
     this.closeEditModal();
+  },
+  
+  // Auto resize textarea for description input
+  autoResize(evt) {
+    const el = evt.target;
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  },
+  
+  // Due Date Functions
+  currentDate() {
+    return new Date().toISOString().split('T')[0];
+  },
+  formatDate(date) {
+    return date.slice(5);
+  },
+  isOverDue(date) {
+    return date < this.currentDate();
   }
   
 });

@@ -79,7 +79,7 @@
   <script src="./script.js" defer></script>
   
 </head>
-<body v-scope v-cloak class="w-screen h-screen overflow-hidden bg-gray-1 select-none">
+<body v-scope v-cloak class="w-[100svw] h-[100svh] overflow-hidden bg-gray-1 select-none">
   
   <!-- Overlay -->
   <div
@@ -93,26 +93,43 @@
     <section></section>
     
     <!-- Items -->
-    <section class="items-container flex-1 flex flex-col overflow-y-auto">
+    <section class="items-container flex-1 flex flex-col overflow-x-hidden overflow-y-auto">
       <div
         v-for="item in items"
         :key="item.id"
         @pointerdown="onItemPointerDown($event)"
         @click="openEditModal(item)"
-        :style="{ backgroundColor: PALETTE[item.color] || PALETTE['none'] }"
-        class="item p-4 last:mb-32 border-b border-gray-4 flex items-center gap-2 cursor-pointer"
+        :style="(() => {
+          const theme = PALETTE[item.color] || PALETTE['none'];
+          return {
+            backgroundColor: theme.itemColor,
+            color: theme.textColor,
+            borderColor: theme.borderColor
+          };
+        })()"
+        class="item p-4 pr-8 last:mb-32 border-b flex items-center gap-2 cursor-pointer"
       >
         
         <!-- Checkbox -->
-        <label @pointerdown.stop @click.stop class="flex justify-center items-center px-4 h-full">
+        <label @pointerdown.stop @click.stop class="shrink-0 flex justify-center items-center px-4 h-full">
           <input type="checkbox" v-model="item.completed" @change="save()" :class="{ 'opacity-50': item.completed }">
         </label>
         
         <!-- Title and Description -->
-        <div :class="{ 'opacity-50': item.completed }">
-          <h2 class="text-lg font-medium">{{ item.title || 'Untitled' }}</h2>
-          <p class="text-gray-11">{{ item.desc }}</p>
+        <div class="flex-1 min-w-0" :class="{ 'opacity-50': item.completed }">
+          <h2 class="font-medium [overflow-wrap:anywhere]">{{ item.title || 'Untitled' }}</h2>
+          <p class="text-sm text-gray-11 line-clamp-3 [overflow-wrap:anywhere] [white-space:pre-line]">{{ item.desc }}</p>
         </div>
+        
+        <!-- Due Date -->
+        <span
+          v-if="item.date"
+          :class="[
+            isOverDue(item.date) ? 'text-red-11' : 'text-gray-11',
+            { 'opacity-50': item.completed }
+          ]"
+          class="shrink-0 text-xs ml-2"
+        >{{ formatDate(item.date) }}</span>
         
       </div>
     </section>
@@ -134,29 +151,40 @@
         <!-- Title Input -->
         <input
           type="text"
+          @keyup.enter="$event.target.blur()"
           v-model="editingItem.title"
           placeholder="Untitled"
-          class="bg-gray-3 border border-gray-5 rounded-xl p-2 outline-none focus-visible:border-gray-12"
+          class="text-lg bg-gray-2 border border-gray-4 rounded-xl px-3 py-2 outline-none focus-visible:border-gray-12"
         >
         
         <!-- Description Input -->
         <textarea
           v-model="editingItem.desc"
+          @input="autoResize($event)"
           placeholder="Description (optional)"
-          rows="3"
-          class="bg-gray-3 border border-gray-5 rounded-xl p-2 outline-none focus-visible:border-gray-12 resize-none"
+          class="min-h-[3lh] max-h-[10lh] bg-gray-2 border border-gray-4 rounded-xl px-3 py-2 outline-none focus-visible:border-gray-12 resize-none"
         ></textarea>
+        
+        <!-- Due Date Input -->
+        <label class="px-4 flex items-center gap-4">
+          <span>Due Date:</span>
+          <input
+            type="date"
+            v-model="editingItem.date"
+            class="flex-1 bg-white-black border border-gray-4 rounded-xl py-1 text-sm text-center outline-none focus-visible:border-gray-12"
+          >
+        </label>
         
         <!-- Color Selection -->
         <div class="flex justify-center items-center gap-4 py-2">
           <input
             type="radio"
-            v-for="(colorClass, colorKey) in PALETTE"
+            v-for="(colorName, colorKey) in PALETTE"
             :key="colorKey"
             :name="editingItem.id"
             :value="colorKey"
             v-model="editingItem.color"
-            :style="{ backgroundColor: colorClass }"
+            :style="{ backgroundColor: colorName.previewColor }"
             class="w-6 h-6 rounded-full ring-1 ring-offset-1 ring-gray-3 appearance-none cursor-pointer transition-transform checked:ring-offset-2 checked:ring-gray-9 checked:scale-120"
           >
         </div>
