@@ -6,6 +6,8 @@
 /* Radix Colors */
 @theme {
   
+  --color-white-black: var(--white-black);
+  
   --color-alpha-5: var(--alpha-5);
   --color-alpha-10: var(--alpha-10);
   --color-alpha-15: var(--alpha-15);
@@ -301,10 +303,6 @@
 }
 
 /* Custom Variables */
-@theme {
-  --color-white-black: var(--white-black);
-}
-
 :root {
   --white-black: #fff;
   --scroll-bar-thumb: #666;
@@ -358,12 +356,11 @@
 
 /* SortableJS */
 .sortable-chosen, .sortable-fallback {
-  box-shadow: 0 2px 10px var(--color-alpha-10);
+  box-shadow: 0 2px 10px var(--color-alpha-5);
   z-index: 50;
-  cursor: grabbing !important;
 }
 
 .sortable-ghost {
   box-shadow: none;
-  opacity: 0.5;
+  opacity: 0.15;
 }

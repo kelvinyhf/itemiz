@@ -5,12 +5,12 @@ const STORAGE_KEY = "Notick_v1";
 
 // Color palette for item colors
 const PALETTE = {
-  none: "bg-white-black",
-  red: "bg-[color-mix(in_srgb,var(--color-red-1),var(--color-red-2))]",
-  orange: "bg-[color-mix(in_srgb,var(--color-orange-1),var(--color-orange-2))]",
-  green: "bg-[color-mix(in_srgb,var(--color-green-1),var(--color-green-2))]",
-  blue: "bg-[color-mix(in_srgb,var(--color-blue-1),var(--color-blue-2))]",
-  iris: "bg-[color-mix(in_srgb,var(--color-iris-1),var(--color-iris-2))]"
+  none: "var(--white-black)",
+  red: "color-mix(in srgb, var(--red-1), var(--red-2))",
+  orange: "color-mix(in srgb, var(--orange-1), var(--orange-2))",
+  green: "color-mix(in srgb, var(--green-1), var(--green-2))",
+  blue: "color-mix(in srgb, var(--blue-1), var(--blue-2))",
+  iris: "color-mix(in srgb, var(--iris-1), var(--iris-2))"
 };
 
 // Generate random Id for items
@@ -21,6 +21,7 @@ function generateId() {
 // ------------------------------
 // DOM Elements
 // ------------------------------
+const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
 const itemsContainer = document.querySelectorAll('.items-container');
 const bottomBar = document.getElementById('bottom-bar');
 const addItem = document.getElementById('add-item');
@@ -100,20 +101,22 @@ const state = PetiteVue.reactive({
   
   // Edit Modal functions
   pressStartTime: null,
-  isMouse: false,
+  isDragging: false,
   editingItem: { id: "", title: "", desc: "", color: "none", completed: false },
   
-  // When pointer is down, start counting and check pointer type
+  // When pointer is down, start counting
   onItemPointerDown(evt) {
-    this.isMouse = evt.pointerType === 'mouse';
     this.pressStartTime = Date.now();
   },
   
   openEditModal(item) {
     
-    // If it's hold (>200ms) and it's not mouse, return
-    if ((Date.now() - this.pressStartTime > 200) && !this.isMouse) return;
-    
+    // If dragging, return
+    if (this.isDragging) return;
+
+    // If holding (>200ms) in mobile, return
+    if (isTouchDevice && (Date.now() - this.pressStartTime > 200)) return;
+
     // Target the item (via editingItem), show overlay and edit modal
     this.editingItem = { ...item };
     this.showingOverlay = true;
@@ -168,8 +171,8 @@ itemsContainer.forEach(container => {
     fallbackOnBody: true,
     
     // Delay
-    delay: 250,
-    delayOnTouchOnly: true,
+    delay: isTouchDevice ? 250 : 0,
+    delayOnTouchOnly: false,
     touchStartThreshold: 5,
     
     // Auto Scroll
@@ -177,24 +180,40 @@ itemsContainer.forEach(container => {
     scrollSensitivity: 150, // IMPROVEMENTS when auto scrolling down (trash can problem)
     scrollSpeed: 10,
     
-    // UI Appearance when dragging
+    // If is touch device, vibrate and show trash can when choosing item
     onChoose() {
       if ('vibrate' in navigator) navigator.vibrate(30);
-      showBottomBarChild(trashCan);
+      if (isTouchDevice) showBottomBarChild(trashCan);
     },
+
+    // If not touch device, show trash can only when starting to drag item
+    onStart() {
+      state.isDragging = true;
+      if (!isTouchDevice) showBottomBarChild(trashCan);
+    },
+
+    // If no overlay is showing, show add item button when unchoosing item
     onUnchoose() {
       setTimeout(() => {
-        showBottomBarChild(addItem);
+        if (!state.showingOverlay) {
+          showBottomBarChild(addItem);
+        }
       }, 0);
     },
     
-    // Move item or delete item
+    // When finish dragging
     onEnd(evt) {
+
+      // Reset dragging state
+      setTimeout(() => {
+        state.isDragging = false;
+      }, 0);
+
+      // Get the touch/cursor position
       const ogEvt = evt.originalEvent;
       let touchX = 0;
       let touchY = 0;
-      
-      // Touch screen and cursor
+
       if (ogEvt.changedTouches && ogEvt.changedTouches.length > 0) {
         touchX = ogEvt.changedTouches[0].clientX;
         touchY = ogEvt.changedTouches[0].clientY;
@@ -206,6 +225,7 @@ itemsContainer.forEach(container => {
       const dropTarget = document.elementFromPoint(touchX, touchY);
       const isDroppedInTrash = trashCan.contains(dropTarget);
       
+      // If dropped in trash can, delete the item. Otherwise, move the item to new position
       if (isDroppedInTrash) {
         
         // Delete, save, and vibrate

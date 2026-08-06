@@ -99,8 +99,8 @@
         :key="item.id"
         @pointerdown="onItemPointerDown($event)"
         @click="openEditModal(item)"
-        :class="PALETTE[item.color] || PALETTE['none']"
-        class="item p-4 last:mb-32 border-b border-gray-4 flex items-center gap-2 cursor-grab"
+        :style="{ backgroundColor: PALETTE[item.color] || PALETTE['none'] }"
+        class="item p-4 last:mb-32 border-b border-gray-4 flex items-center gap-2 cursor-pointer"
       >
         
         <!-- Checkbox -->
@@ -156,7 +156,7 @@
             :name="editingItem.id"
             :value="colorKey"
             v-model="editingItem.color"
-            :class="colorClass.replace(/[12]/, '3')"
+            :style="{ backgroundColor: colorClass }"
             class="w-6 h-6 rounded-full ring-1 ring-offset-1 ring-gray-3 appearance-none cursor-pointer transition-transform checked:ring-offset-2 checked:ring-gray-9 checked:scale-120"
           >
         </div>
@@ -164,7 +164,7 @@
         <!-- Save Button -->
         <button 
           @click="saveEditModal()" 
-          class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl"
+          class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer"
         >Save</button>
         
     </section>
