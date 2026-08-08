@@ -3,6 +3,7 @@
 // ------------------------------
 const DATA_KEY = "Notick_data_v1";
 const ACTIVE_CONTAINER_ID_KEY = "Notick_active_container_id_v1";
+const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
 
 // Color palette for item colors
 const PALETTE = {
@@ -100,11 +101,12 @@ function generateId() {
 // ------------------------------
 // DOM Elements
 // ------------------------------
-const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
 const itemsContainer = document.querySelectorAll('.items-container');
+const topBar = document.getElementById('top-bar');
 const bottomBar = document.getElementById('bottom-bar');
-const addItem = document.getElementById('add-item');
+const toolbar = document.getElementById('toolbar');
 const editModal = document.getElementById('edit-modal');
+const settingModal = document.getElementById('setting-modal');
 const trashCan = document.getElementById('trash-can');
 
 // ------------------------------
@@ -138,7 +140,7 @@ const state = PetiteVue.reactive({
     }
     
     // Return the first container's id or an empty string if no containers exist
-    return data[0].id || "";
+    return data.length > 0 ? data[0].id : "";
     
   })(),
   setActiveContainer(id) {
@@ -162,10 +164,20 @@ const state = PetiteVue.reactive({
   
   // Add and Delete Container
   addContainer() {
-    const newContainer = { id: generateId(), name: "New Container", items: [] };
+    const newContainer = { id: generateId(), name: "", items: [] };
     this.data.push(newContainer);
     this.save();
+    
+    // Set new active container, open setting modal and auto scroll
     this.setActiveContainer(newContainer.id);
+    this.openSettingModal(newContainer.id);
+    PetiteVue.nextTick(() => {
+      topBar.scrollTo({
+        left: topBar.scrollWidth,
+        behavior: 'smooth'
+      });
+    });
+    
   },
   deleteContainer(id) {
     this.data = this.data.filter(c => c.id !== id);
@@ -217,7 +229,7 @@ const state = PetiteVue.reactive({
     this.closeEditModal();
   },
   
-  // Edit Modal functions
+  // Edit Modal (about items)
   pressStartTime: null,
   isDragging: false,
   editingItem: { id: "", title: "", desc: "", color: "none", date: "", completed: false },
@@ -246,13 +258,10 @@ const state = PetiteVue.reactive({
   closeEditModal() {
     this.editingItem = { id: "", title: "", desc: "", color: "none", date: "", completed: false };
     this.showingOverlay = false;
-    showBottomBarChild(addItem);
+    showBottomBarChild(toolbar);
   },
   
   saveEditModal(containerId) {
-    
-    // Return if not editing
-    if (!this.editingItem) return;
     
     // Find the actual item (via id) and save it
     const targetItems = this.getItemsById(containerId);
@@ -280,6 +289,41 @@ const state = PetiteVue.reactive({
   },
   isOverDue(date) {
     return date < this.currentDate();
+  },
+  
+  // Setting Modal (about containers)
+  editingContainer: { id: "", name: "", items: [] },
+  
+  openSettingModal(containerId) {
+    
+    // Target the container (via editingContainer), show overlay and setting modal
+    this.editingContainer = { ...this.getContainerById(containerId) };
+    this.showingOverlay = true;
+    showBottomBarChild(settingModal);
+    
+  },
+  
+  // Reset editingContainer, hide overlay and setting modal
+  closeSettingModal() {
+    this.editingContainer = { id: "", name: "", items: [] };
+    this.showingOverlay = false;
+    showBottomBarChild(toolbar);
+  },
+  
+  saveSettingModal(containerId) {
+    
+    // Find the actual container (via id) and save it
+    const targetContainer = this.getContainerById(containerId);
+    
+    // Loop through all keys and save
+    Object.keys(this.editingContainer).forEach(key => {
+      const value = this.editingContainer[key];
+      targetContainer[key] = typeof value === 'string' ? value.trim() : value;
+    });
+    this.save();
+    
+    // Close setting modal
+    this.closeSettingModal();
   }
   
 });
@@ -289,7 +333,7 @@ PetiteVue.createApp(state).mount('body');
 state.save();
 
 // ------------------------------
-// SortableJS
+// SortableJS - Items
 // ------------------------------
 itemsContainer.forEach(container => {
   Sortable.create(container, {
@@ -331,7 +375,7 @@ itemsContainer.forEach(container => {
     onUnchoose() {
       setTimeout(() => {
         if (!state.showingOverlay) {
-          showBottomBarChild(addItem);
+          showBottomBarChild(toolbar);
         }
       }, 0);
     },
@@ -385,4 +429,49 @@ itemsContainer.forEach(container => {
     }
     
   });
+});
+
+// ------------------------------
+// SortableJS - Containers
+// ------------------------------
+Sortable.create(topBar, {
+  
+  // Basic Settings
+  animation: 250,
+  handle: '.tabs',
+  draggable: '.tabs',
+  
+  // Sortable Classes
+  chosenClass: 'sortable-chosen',
+  fallbackClass: 'sortable-fallback',
+  ghostClass: 'sortable-ghost',
+  forceFallback: true,
+  fallbackOnBody: true,
+  
+  // Delay
+  delay: isTouchDevice ? 150 : 0,
+  delayOnTouchOnly: false,
+  touchStartThreshold: 5,
+  
+  // Auto Scroll
+  scroll: true,
+  scrollSensitivity: 100,
+  scrollSpeed: 5,
+  
+  onEnd(evt) {
+    
+    // Return if the position didn't change
+    if (evt.oldIndex === evt.newIndex) return;
+    
+    // Clone the original data and change the container position in it
+    const updatedData = [...state.data];
+    const [movedContainer] = updatedData.splice(evt.oldIndex, 1);
+    updatedData.splice(evt.newIndex, 0, movedContainer);
+    
+    // Update original data and save
+    state.data = updatedData;
+    state.save();
+    
+  }
+  
 });

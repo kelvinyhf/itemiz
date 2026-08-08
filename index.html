@@ -91,21 +91,27 @@
   <main class="h-full flex flex-col justify-between">
     
     <!-- Top Bar -->
-    <section onwheel="this.scrollLeft += event.deltaY" id="top-bar" class="relative flex items-center bg-gray-1 border-b border-gray-3 overflow-x-auto overflow-y-hidden thin-scrollbar">
+    <section onwheel="this.scrollLeft += event.deltaY" id="top-bar" class="relative flex items-center bg-gray-1 border-b border-gray-3 overflow-x-auto overflow-y-hidden overscroll-none no-scrollbar">
       
-      <!-- Container tabs -->
+      <!-- Container Tabs -->
       <div
         v-for="container in data"
         :key="container.id"
         @click="setActiveContainer(container.id)"
-        class="h-full text-sm bg-white-black border-r border-gray-2 px-4 py-2 flex justify-center items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer"
+        class="tabs h-full text-sm bg-white-black border-r border-gray-2 px-4 py-2 flex justify-center items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer"
       >
-        <span>{{ container.name }}</span>
-        <span @click.stop="deleteContainer(container.id)" class="text-red-10">X</span>
+        <span>{{ container.name || 'New Container' }}</span>
+        <button @click.stop="deleteContainer(container.id)"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--red-9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
       </div>
       
       <!-- Add Container Button -->
-      <button @click="addContainer()" class="sticky top-0 right-0 ml-auto h-full bg-white-black text-sm px-4 py-2 border-l border-gray-2 shrink-0 whitespace-nowrap cursor-pointer">+ Add Container</button>
+      <button
+        @click="addContainer()"
+        class="sticky top-0 right-0 ml-auto h-full bg-white-black text-sm px-4 py-2 shrink-0 flex items-center gap-2 whitespace-nowrap cursor-pointer"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gray-11)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5H3"/><path d="M11 12H3"/><path d="M16 19H3"/><path d="M18 9v6"/><path d="M21 12h-6"/></svg>
+        <span class="text-gray-11 font-medium">Add</span>
+      </button>
       
     </section>
     
@@ -134,7 +140,7 @@
         
         <!-- Title and Description -->
         <div class="flex-1 min-w-0" :class="{ 'opacity-50': item.completed }">
-          <h2 class="font-medium [overflow-wrap:anywhere]">{{ item.title || 'Untitled' }}</h2>
+          <h2 class="font-medium [overflow-wrap:anywhere]">{{ item.title || 'New Item' }}</h2>
           <p class="text-sm text-gray-11 line-clamp-3 [overflow-wrap:anywhere] [white-space:pre-line]">{{ item.desc }}</p>
         </div>
         
@@ -159,8 +165,11 @@
         <span class="text-red-9 text-sm">Drop here to delete</span>
       </div>
       
-      <!-- Add Item Button -->
-      <button id="add-item" @click="addItem(activeContainerId)" class="touch-manipulation block bg-white-black rounded-full px-4 py-2">Add Item</button>
+      <!-- Toolbar -->
+      <div id="toolbar" class="touch-manipulation bg-white-black rounded-full px-4 py-2 flex gap-2">
+        <button @click="addItem(activeContainerId)" class="block text-lg bg-gray-2 rounded-full px-4 py-2 cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gray-12)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
+        <button @click="openSettingModal(activeContainerId)" class="block text-lg bg-gray-2 rounded-full px-4 py-2 cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gray-12)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg></button>
+      </div>
       
       <!-- Edit Modal -->
       <div id="edit-modal" class="w-full bg-white-black p-4 rounded-t-2xl hidden flex flex-col gap-4">
@@ -170,7 +179,7 @@
           type="text"
           @keyup.enter="$event.target.blur()"
           v-model="editingItem.title"
-          placeholder="Untitled"
+          placeholder="New Item"
           class="font-medium bg-gray-2 border border-gray-4 rounded-xl px-3 py-2 outline-none focus-visible:border-gray-12"
         >
         
@@ -211,6 +220,42 @@
           class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer border focus-visible:border-gray-1"
         >Save</button>
         
+      </div>
+      
+      <!-- Setting Modal -->
+      <div id="setting-modal" class="w-full bg-white-black p-4 rounded-t-2xl hidden flex flex-col gap-4">
+        
+        <!-- Name Input -->
+        <input
+          type="text"
+          @keyup.enter="$event.target.blur()"
+          v-model="editingContainer.name"
+          placeholder="New Container"
+          class="font-medium bg-gray-2 border border-gray-4 rounded-xl px-3 py-2 outline-none focus-visible:border-gray-12"
+        >
+        
+        <!-- Color Selection -->
+        <!-- <div class="flex justify-center items-center gap-4 py-2">
+          <input
+            type="radio"
+            v-for="(colorName, colorKey) in PALETTE"
+            :key="colorKey"
+            :name="editingItem.id"
+            :value="colorKey"
+            v-model="editingItem.color"
+            :style="{ backgroundColor: colorName.previewColor }"
+            class="w-6 h-6 rounded-full ring-1 ring-offset-1 ring-gray-3 appearance-none cursor-pointer transition-transform checked:ring-offset-2 checked:ring-gray-9 checked:scale-120"
+          >
+        </div> -->
+        
+        <!-- Save Button -->
+        <button 
+          @click="saveSettingModal(activeContainerId)"
+          class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer border focus-visible:border-gray-1"
+        >Save</button>
+        
+      </div>
+      
     </section>
     
   </main>
