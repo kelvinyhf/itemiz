@@ -1,7 +1,8 @@
 // ------------------------------
 // Variables and Helpers
 // ------------------------------
-const STORAGE_KEY = "Notick_v1";
+const DATA_KEY = "Notick_data_v1";
+const ACTIVE_CONTAINER_ID_KEY = "Notick_active_container_id_v1";
 
 // Color palette for item colors
 const PALETTE = {
@@ -43,6 +44,54 @@ const PALETTE = {
   }
 };
 
+// Default data object if localStorage is empty
+const DEFAULT_DATA = [
+  {
+    id: generateId(),
+    name: "Tutorial",
+    items: [
+      {
+        id: generateId(),
+        title: "Click to edit!",
+        desc: "Can add description too",
+        color: "none",
+        date: "",
+        completed: false
+      },
+      {
+        id: generateId(),
+        title: "That's it!",
+        desc: "Hope you like it",
+        color: "none",
+        date: "",
+        completed: true
+      }
+    ]
+  },
+  {
+    id: generateId(),
+    name: "Today's Work",
+    items: [
+      {
+        id: generateId(),
+        title: "Start a New Project",
+        desc: "Can be anything",
+        color: "green",
+        date: "",
+        completed: true
+      },
+      {
+        id: generateId(),
+        title: "Make at least 3 commits",
+        desc: "No executes",
+        color: "red",
+        date: new Date().toISOString().split('T')[0],
+        completed: false
+      }
+    ]
+  }
+]
+
 // Generate random Id
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
@@ -76,64 +125,28 @@ function showBottomBarChild(target) {
 const state = PetiteVue.reactive({
   
   // Data Object
-  data: JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
-    {
-      id: generateId(),
-      name: "Tutorial",
-      items: [
-        {
-          id: generateId(),
-          title: "Click to edit!",
-          desc: "Can add description too",
-          color: "none",
-          date: "",
-          completed: false
-        },
-        {
-          id: generateId(),
-          title: "That's it!",
-          desc: "Hope you like it",
-          color: "none",
-          date: "",
-          completed: true
-        }
-      ]
-    },
-    {
-      id: generateId(),
-      name: "Today's Work",
-      items: [
-        {
-          id: generateId(),
-          title: "Start a New Project",
-          desc: "Can be anything",
-          color: "green",
-          date: "",
-          completed: true
-        },
-        {
-          id: generateId(),
-          title: "Make at least 3 commits",
-          desc: "No executes",
-          color: "red",
-          date: new Date().toISOString().split('T')[0],
-          completed: false
-        }
-      ]
+  data: JSON.parse(localStorage.getItem(DATA_KEY)) || DEFAULT_DATA,
+  
+  // Active container Id (from localStorage or first container)
+  activeContainerId: (() => {
+    const savedId = localStorage.getItem(ACTIVE_CONTAINER_ID_KEY);
+    const data = JSON.parse(localStorage.getItem(DATA_KEY)) || DEFAULT_DATA;
+
+    // If savedId exists and is valid, return it
+    if (savedId && data && data.some(c => c.id === savedId)) {
+      return savedId;
     }
-  ],
-  
-  // Default active container
-  activeContainerId: "",
-  
-  // Methods
-  getContainerByName(name) {
-    return this.data.find(c => c.name === name);
+    
+    // Return the first container's id or an empty string if no containers exist
+    return data[0].id || "";
+    
+  })(),
+  setActiveContainer(id) {
+    this.activeContainerId = id;
+    localStorage.setItem(ACTIVE_CONTAINER_ID_KEY, id);
   },
-  getItemsByName(name) {
-    const container = this.getContainerByName(name);
-    return container ? container.items : [];
-  },
+
+  // Get Container and Items by Id
   getContainerById(id) {
     return this.data.find(c => c.id === id);
   },
@@ -144,7 +157,7 @@ const state = PetiteVue.reactive({
   
   // Save Data
   save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+    localStorage.setItem(DATA_KEY, JSON.stringify(this.data));
   },
   
   // Add and Delete Container
@@ -152,14 +165,18 @@ const state = PetiteVue.reactive({
     const newContainer = { id: generateId(), name: "New Container", items: [] };
     this.data.push(newContainer);
     this.save();
-    this.activeContainerId = newContainer.id;
+    this.setActiveContainer(newContainer.id);
   },
   deleteContainer(id) {
     this.data = this.data.filter(c => c.id !== id);
     
-    // If selecting the container to be deleted, auto select first container
+    // If the deleted container was the active one, set the active container to the first one or empty if none left
     if (this.data.length > 0) {
-      this.activeContainerId = this.data[0].id;
+      if (this.activeContainerId === id) {
+        this.setActiveContainer(this.data[0].id);
+      }
+    } else {
+      this.setActiveContainer("");
     }
     
     this.save();
@@ -267,8 +284,9 @@ const state = PetiteVue.reactive({
   
 });
 
-// Create App
+// Create App and save once
 PetiteVue.createApp(state).mount('body');
+state.save();
 
 // ------------------------------
 // SortableJS
@@ -288,7 +306,7 @@ itemsContainer.forEach(container => {
     fallbackOnBody: true,
     
     // Delay
-    delay: isTouchDevice ? 250 : 0,
+    delay: isTouchDevice ? 250 : 0, // IMPROVEMENTS when dragging with mouse
     delayOnTouchOnly: false,
     touchStartThreshold: 5,
     

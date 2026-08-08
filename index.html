@@ -91,21 +91,21 @@
   <main class="h-full flex flex-col justify-between">
     
     <!-- Top Bar -->
-    <section id="top-bar" class="relative flex items-center bg-gray-1 border-b border-gray-3">
+    <section onwheel="this.scrollLeft += event.deltaY" id="top-bar" class="relative flex items-center bg-gray-1 border-b border-gray-3 overflow-x-auto overflow-y-hidden thin-scrollbar">
       
       <!-- Container tabs -->
       <div
         v-for="container in data"
         :key="container.id"
-        @click="activeContainerId = container.id"
-        class="h-full text-sm bg-white-black border-r border-gray-2 px-4 py-2 flex justify-center items-center gap-2"
+        @click="setActiveContainer(container.id)"
+        class="h-full text-sm bg-white-black border-r border-gray-2 px-4 py-2 flex justify-center items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer"
       >
         <span>{{ container.name }}</span>
         <span @click.stop="deleteContainer(container.id)" class="text-red-10">X</span>
       </div>
       
       <!-- Add Container Button -->
-      <button @click="addContainer()" class="absolute top-0 right-0 h-full bg-white-black text-sm px-4 py-2 border-l border-gray-2">+ Add Container</button>
+      <button @click="addContainer()" class="sticky top-0 right-0 ml-auto h-full bg-white-black text-sm px-4 py-2 border-l border-gray-2 shrink-0 whitespace-nowrap cursor-pointer">+ Add Container</button>
       
     </section>
     
@@ -171,14 +171,14 @@
           @keyup.enter="$event.target.blur()"
           v-model="editingItem.title"
           placeholder="Untitled"
-          class="text-lg bg-gray-2 border border-gray-4 rounded-xl px-3 py-2 outline-none focus-visible:border-gray-12"
+          class="font-medium bg-gray-2 border border-gray-4 rounded-xl px-3 py-2 outline-none focus-visible:border-gray-12"
         >
         
         <!-- Description Input -->
         <textarea
           v-model="editingItem.desc"
           placeholder="Description (optional)"
-          class="min-h-[3lh] max-h-[10lh] [field-sizing:content] bg-gray-2 border border-gray-4 rounded-xl px-3 py-2 outline-none focus-visible:border-gray-12 resize-none"
+          class="min-h-[3lh] max-h-[10lh] [field-sizing:content] bg-gray-2 border border-gray-4 rounded-xl px-3 py-2 outline-none focus-visible:border-gray-12 resize-none no-scrollbar"
         ></textarea>
         
         <!-- Due Date Input -->
@@ -187,7 +187,7 @@
           <input
             type="date"
             v-model="editingItem.date"
-            class="flex-1 bg-white-black border border-gray-4 rounded-xl py-1 text-sm text-center outline-none focus-visible:border-gray-12"
+            class="flex-1 bg-white-black border border-gray-4 rounded-xl py-1 text-sm text-center px-4 outline-none focus-visible:border-gray-12"
           >
         </label>
         
@@ -208,7 +208,7 @@
         <!-- Save Button -->
         <button 
           @click="saveEditModal(activeContainerId)"
-          class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer"
+          class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer border focus-visible:border-gray-1"
         >Save</button>
         
     </section>
