@@ -90,12 +90,29 @@
   
   <main class="h-full flex flex-col justify-between">
     
-    <section></section>
+    <!-- Top Bar -->
+    <section id="top-bar" class="relative flex items-center bg-gray-1 border-b border-gray-3">
+      
+      <!-- Container tabs -->
+      <div
+        v-for="container in data"
+        :key="container.id"
+        @click="activeContainerId = container.id"
+        class="h-full text-sm bg-white-black border-r border-gray-2 px-4 py-2 flex justify-center items-center gap-2"
+      >
+        <span>{{ container.name }}</span>
+        <span @click.stop="deleteContainer(container.id)" class="text-red-10">X</span>
+      </div>
+      
+      <!-- Add Container Button -->
+      <button @click="addContainer()" class="absolute top-0 right-0 h-full bg-white-black text-sm px-4 py-2 border-l border-gray-2">+ Add Container</button>
+      
+    </section>
     
     <!-- Items -->
-    <section class="items-container flex-1 flex flex-col overflow-x-hidden overflow-y-auto">
+    <section :data-container-id="activeContainerId" class="items-container flex-1 flex flex-col overflow-x-hidden overflow-y-auto">
       <div
-        v-for="item in items"
+        v-for="item in getItemsById(activeContainerId)"
         :key="item.id"
         @pointerdown="onItemPointerDown($event)"
         @click="openEditModal(item)"
@@ -143,7 +160,7 @@
       </div>
       
       <!-- Add Item Button -->
-      <button id="add-item" @click="addItem()" class="touch-manipulation block bg-white-black rounded-full px-4 py-2">Add Item</button>
+      <button id="add-item" @click="addItem(activeContainerId)" class="touch-manipulation block bg-white-black rounded-full px-4 py-2">Add Item</button>
       
       <!-- Edit Modal -->
       <div id="edit-modal" class="w-full bg-white-black p-4 rounded-t-2xl hidden flex flex-col gap-4">
@@ -160,9 +177,8 @@
         <!-- Description Input -->
         <textarea
           v-model="editingItem.desc"
-          @input="autoResize($event)"
           placeholder="Description (optional)"
-          class="min-h-[3lh] max-h-[10lh] bg-gray-2 border border-gray-4 rounded-xl px-3 py-2 outline-none focus-visible:border-gray-12 resize-none"
+          class="min-h-[3lh] max-h-[10lh] [field-sizing:content] bg-gray-2 border border-gray-4 rounded-xl px-3 py-2 outline-none focus-visible:border-gray-12 resize-none"
         ></textarea>
         
         <!-- Due Date Input -->
@@ -191,7 +207,7 @@
         
         <!-- Save Button -->
         <button 
-          @click="saveEditModal()" 
+          @click="saveEditModal(activeContainerId)"
           class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer"
         >Save</button>
         

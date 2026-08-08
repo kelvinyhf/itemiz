@@ -43,7 +43,7 @@ const PALETTE = {
   }
 };
 
-// Generate random Id for items
+// Generate random Id
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
 }
@@ -75,35 +75,100 @@ function showBottomBarChild(target) {
 // ------------------------------
 const state = PetiteVue.reactive({
   
-  // Items Object
-  items: JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
+  // Data Object
+  data: JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
     {
       id: generateId(),
-      title: "Click to edit!",
-      desc: "Can add description too",
-      color: "none",
-      date: "",
-      completed: false
+      name: "Tutorial",
+      items: [
+        {
+          id: generateId(),
+          title: "Click to edit!",
+          desc: "Can add description too",
+          color: "none",
+          date: "",
+          completed: false
+        },
+        {
+          id: generateId(),
+          title: "That's it!",
+          desc: "Hope you like it",
+          color: "none",
+          date: "",
+          completed: true
+        }
+      ]
     },
     {
       id: generateId(),
-      title: "That's it!",
-      desc: "Hope you like it",
-      color: "none",
-      date: "",
-      completed: true
+      name: "Today's Work",
+      items: [
+        {
+          id: generateId(),
+          title: "Start a New Project",
+          desc: "Can be anything",
+          color: "green",
+          date: "",
+          completed: true
+        },
+        {
+          id: generateId(),
+          title: "Make at least 3 commits",
+          desc: "No executes",
+          color: "red",
+          date: new Date().toISOString().split('T')[0],
+          completed: false
+        }
+      ]
     }
   ],
   
-  // Save
+  // Default active container
+  activeContainerId: "",
+  
+  // Methods
+  getContainerByName(name) {
+    return this.data.find(c => c.name === name);
+  },
+  getItemsByName(name) {
+    const container = this.getContainerByName(name);
+    return container ? container.items : [];
+  },
+  getContainerById(id) {
+    return this.data.find(c => c.id === id);
+  },
+  getItemsById(id) {
+    const container = this.getContainerById(id);
+    return container ? container.items : [];
+  },
+  
+  // Save Data
   save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.items));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+  },
+  
+  // Add and Delete Container
+  addContainer() {
+    const newContainer = { id: generateId(), name: "New Container", items: [] };
+    this.data.push(newContainer);
+    this.save();
+    this.activeContainerId = newContainer.id;
+  },
+  deleteContainer(id) {
+    this.data = this.data.filter(c => c.id !== id);
+    
+    // If selecting the container to be deleted, auto select first container
+    if (this.data.length > 0) {
+      this.activeContainerId = this.data[0].id;
+    }
+    
+    this.save();
   },
   
   // Add and Delete Item
-  addItem() {
+  addItem(containerId) {
     const newItem = { id: generateId(), title: "", desc: "", color: "none", date: "", completed: false };
-    this.items.push(newItem);
+    this.getItemsById(containerId).push(newItem);
     this.save();
     
     // Open Edit Modal and auto scroll
@@ -120,9 +185,13 @@ const state = PetiteVue.reactive({
     });
     
   },
-  deleteItem(id) {
-    this.items = this.items.filter(item => item.id !== id);
-    this.save();
+  deleteItem(containerId, index) {
+    const container = this.getContainerById(containerId);
+    if (container.items[index]) {
+      container.items.splice(index, 1);
+      this.save();
+      if ('vibrate' in navigator) navigator.vibrate([20, 50, 20]);
+    }
   },
   
   // Overlay
@@ -145,10 +214,10 @@ const state = PetiteVue.reactive({
     
     // If dragging, return
     if (this.isDragging) return;
-
+    
     // If holding (>200ms) in mobile, return
     if (isTouchDevice && (Date.now() - this.pressStartTime > 200)) return;
-
+    
     // Target the item (via editingItem), show overlay and edit modal
     this.editingItem = { ...item };
     this.showingOverlay = true;
@@ -163,32 +232,26 @@ const state = PetiteVue.reactive({
     showBottomBarChild(addItem);
   },
   
-  saveEditModal() {
+  saveEditModal(containerId) {
     
     // Return if not editing
     if (!this.editingItem) return;
     
     // Find the actual item (via id) and save it
-    const index = this.items.findIndex(i => i.id === this.editingItem.id);
+    const targetItems = this.getItemsById(containerId);
+    const index = targetItems.findIndex(i => i.id === this.editingItem.id);
     
     // Loop through all keys and save
     if (index !== -1) {
       Object.keys(this.editingItem).forEach(key => {
         const value = this.editingItem[key];
-        this.items[index][key] = typeof value === 'string' ? value.trim() : value;
+        targetItems[index][key] = typeof value === 'string' ? value.trim() : value;
       });
       this.save();
     }
     
     // Close edit modal
     this.closeEditModal();
-  },
-  
-  // Auto resize textarea for description input
-  autoResize(evt) {
-    const el = evt.target;
-    el.style.height = 'auto';
-    el.style.height = el.scrollHeight + 'px';
   },
   
   // Due Date Functions
@@ -239,13 +302,13 @@ itemsContainer.forEach(container => {
       if ('vibrate' in navigator) navigator.vibrate(30);
       if (isTouchDevice) showBottomBarChild(trashCan);
     },
-
+    
     // If not touch device, show trash can only when starting to drag item
     onStart() {
       state.isDragging = true;
       if (!isTouchDevice) showBottomBarChild(trashCan);
     },
-
+    
     // If no overlay is showing, show add item button when unchoosing item
     onUnchoose() {
       setTimeout(() => {
@@ -257,17 +320,21 @@ itemsContainer.forEach(container => {
     
     // When finish dragging
     onEnd(evt) {
-
+      
       // Reset dragging state
       setTimeout(() => {
         state.isDragging = false;
       }, 0);
-
+      
+      // Get the target container
+      const containerId = container.dataset.containerId;
+      const targetContainer = state.getContainerById(containerId);
+      
       // Get the touch/cursor position
       const ogEvt = evt.originalEvent;
       let touchX = 0;
       let touchY = 0;
-
+      
       if (ogEvt.changedTouches && ogEvt.changedTouches.length > 0) {
         touchX = ogEvt.changedTouches[0].clientX;
         touchY = ogEvt.changedTouches[0].clientY;
@@ -279,22 +346,23 @@ itemsContainer.forEach(container => {
       const dropTarget = document.elementFromPoint(touchX, touchY);
       const isDroppedInTrash = trashCan.contains(dropTarget);
       
-      // If dropped in trash can, delete the item. Otherwise, move the item to new position
+      // If dropped in trash can, delete the item, save, and vibrate
       if (isDroppedInTrash) {
-        
-        // Delete, save, and vibrate
-        state.items.splice(evt.oldIndex, 1);
-        state.save();
-        if ('vibrate' in navigator) navigator.vibrate([20, 50, 20]);
-        
-      } else {
-        
-        // Move and save
-        const movedItem = state.items.splice(evt.oldIndex, 1)[0];
-        state.items.splice(evt.newIndex, 0, movedItem);
-        state.save();
-        
+        state.deleteItem(containerId, evt.oldIndex)
+        return;
       }
+      
+      // Return if the position didn't change
+      if (evt.oldIndex === evt.newIndex) return;
+      
+      // Clone the original items and change the item position in it
+      const updatedItems = [...targetContainer.items];
+      const [movedItem] = updatedItems.splice(evt.oldIndex, 1);
+      updatedItems.splice(evt.newIndex, 0, movedItem);
+      
+      // Update original items and save
+      targetContainer.items = updatedItems;
+      state.save();
       
     }
     
