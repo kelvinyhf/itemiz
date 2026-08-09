@@ -346,19 +346,6 @@
   }
 }
 
-@utility thin-scrollbar {
-
-  &::-webkit-scrollbar, & *::-webkit-scrollbar {
-    width: 2px;
-    height: 2px;
-  }
-
-  &::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb {
-    border-radius: 1px;
-  }
-
-}
-
 @utility no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;

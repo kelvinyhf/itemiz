@@ -8,40 +8,58 @@ const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
 // Color palette for item colors
 const PALETTE = {
   none: {
+    bgColor: "color-mix(in srgb, var(--white-black), var(--gray-1))",
+    tabColor: "var(--white-black)",
     itemColor: "var(--white-black)",
     previewColor: "var(--white-black)",
     textColor: "var(--gray-12)",
-    borderColor: "var(--gray-4)"
+    borderColor: "var(--gray-4)",
+    placeholderColor: "var(--gray-11)"
   },
   red: {
+    bgColor: "color-mix(in srgb, var(--white-black), var(--red-1))",
+    tabColor: "var(--red-1)",
     itemColor: "color-mix(in srgb, var(--red-1), var(--red-2))",
     previewColor: "var(--red-3)",
     textColor: "var(--red-12)",
-    borderColor: "var(--red-4)"
+    borderColor: "var(--red-4)",
+    placeholderColor: "var(--red-11)"
   },
   orange: {
+    bgColor: "color-mix(in srgb, var(--white-black), var(--orange-1))",
+    tabColor: "var(--orange-1)",
     itemColor: "color-mix(in srgb, var(--orange-1), var(--orange-2))",
     previewColor: "var(--orange-3)",
     textColor: "var(--orange-12)",
-    borderColor: "var(--orange-4)"
+    borderColor: "var(--orange-4)",
+    placeholderColor: "var(--orange-11)"
   },
   green: {
+    bgColor: "color-mix(in srgb, var(--white-black), var(--green-1))",
+    tabColor: "var(--green-1)",
     itemColor: "color-mix(in srgb, var(--green-1), var(--green-2))",
     previewColor: "var(--green-3)",
     textColor: "var(--green-12)",
-    borderColor: "var(--green-4)"
+    borderColor: "var(--green-4)",
+    placeholderColor: "var(--green-11)"
   },
   blue: {
+    bgColor: "color-mix(in srgb, var(--white-black), var(--blue-1))",
+    tabColor: "var(--blue-1)",
     itemColor: "color-mix(in srgb, var(--blue-1), var(--blue-2))",
     previewColor: "var(--blue-3)",
     textColor: "var(--blue-12)",
-    borderColor: "var(--blue-4)"
+    borderColor: "var(--blue-4)",
+    placeholderColor: "var(--blue-11)"
   },
   iris: {
+    bgColor: "color-mix(in srgb, var(--white-black), var(--iris-1))",
+    tabColor: "var(--iris-1)",
     itemColor: "color-mix(in srgb, var(--iris-1), var(--iris-2))",
     previewColor: "var(--iris-3)",
     textColor: "var(--iris-12)",
-    borderColor: "var(--iris-4)"
+    borderColor: "var(--iris-4)",
+    placeholderColor: "var(--iris-11)"
   }
 };
 
@@ -50,6 +68,7 @@ const DEFAULT_DATA = [
   {
     id: generateId(),
     name: "Tutorial",
+    color: "none",
     items: [
       {
         id: generateId(),
@@ -72,6 +91,7 @@ const DEFAULT_DATA = [
   {
     id: generateId(),
     name: "Today's Work",
+    color: "none",
     items: [
       {
         id: generateId(),
@@ -164,7 +184,7 @@ const state = PetiteVue.reactive({
   
   // Add and Delete Container
   addContainer() {
-    const newContainer = { id: generateId(), name: "", items: [] };
+    const newContainer = { id: generateId(), name: "", color: "none", items: [] };
     this.data.push(newContainer);
     this.save();
     
@@ -292,7 +312,7 @@ const state = PetiteVue.reactive({
   },
   
   // Setting Modal (about containers)
-  editingContainer: { id: "", name: "", items: [] },
+  editingContainer: { id: "", name: "", color: "none", items: [] },
   
   openSettingModal(containerId) {
     
@@ -305,7 +325,7 @@ const state = PetiteVue.reactive({
   
   // Reset editingContainer, hide overlay and setting modal
   closeSettingModal() {
-    this.editingContainer = { id: "", name: "", items: [] };
+    this.editingContainer = { id: "", name: "", color: "none", items: [] };
     this.showingOverlay = false;
     showBottomBarChild(toolbar);
   },
@@ -449,7 +469,7 @@ Sortable.create(topBar, {
   fallbackOnBody: true,
   
   // Delay
-  delay: isTouchDevice ? 150 : 0,
+  delay: isTouchDevice ? 150 : 0, // IMPROVEMENTS when dragging with mouse
   delayOnTouchOnly: false,
   touchStartThreshold: 5,
   
