@@ -2,7 +2,7 @@
 // Variables and Helpers
 // ------------------------------
 const DATA_KEY = "Notick_data_v1";
-const ACTIVE_CONTAINER_ID_KEY = "Notick_active_container_id_v1";
+const ACTIVE_LIST_ID_KEY = "Notick_active_list_id_v1";
 const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
 
 // Color palette for item colors
@@ -65,53 +65,50 @@ const PALETTE = {
 
 // Default data object if localStorage is empty
 const DEFAULT_DATA = [
+{
+  id: generateId(),
+  name: "Tutorial",
+  color: "none",
+  items: [
   {
     id: generateId(),
-    name: "Tutorial",
+    title: "Click to edit!",
+    desc: "Can add description too",
     color: "none",
-    items: [
-      {
-        id: generateId(),
-        title: "Click to edit!",
-        desc: "Can add description too",
-        color: "none",
-        date: "",
-        completed: false
-      },
-      {
-        id: generateId(),
-        title: "That's it!",
-        desc: "Hope you like it",
-        color: "none",
-        date: "",
-        completed: true
-      }
-    ]
+    date: "",
+    completed: false
   },
   {
     id: generateId(),
-    name: "Today's Work",
+    title: "That's it!",
+    desc: "Hope you like it",
     color: "none",
-    items: [
-      {
-        id: generateId(),
-        title: "Start a New Project",
-        desc: "Can be anything",
-        color: "green",
-        date: "",
-        completed: true
-      },
-      {
-        id: generateId(),
-        title: "Make at least 3 commits",
-        desc: "No executes",
-        color: "red",
-        date: new Date().toISOString().split('T')[0],
-        completed: false
-      }
-    ]
-  }
-]
+    date: "",
+    completed: true
+  }]
+},
+{
+  id: generateId(),
+  name: "Today's Work",
+  color: "none",
+  items: [
+  {
+    id: generateId(),
+    title: "Start a New Project",
+    desc: "Can be anything",
+    color: "green",
+    date: "",
+    completed: true
+  },
+  {
+    id: generateId(),
+    title: "Make at least 3 commits",
+    desc: "No executes",
+    color: "red",
+    date: new Date().toISOString().split('T')[0],
+    completed: false
+  }]
+}]
 
 // Generate random Id
 function generateId() {
@@ -121,7 +118,7 @@ function generateId() {
 // ------------------------------
 // DOM Elements
 // ------------------------------
-const itemsContainer = document.querySelectorAll('.items-container');
+const lists = document.getElementById('lists');
 const topBar = document.getElementById('top-bar');
 const bottomBar = document.getElementById('bottom-bar');
 const toolbar = document.getElementById('toolbar');
@@ -149,32 +146,32 @@ const state = PetiteVue.reactive({
   // Data Object
   data: JSON.parse(localStorage.getItem(DATA_KEY)) || DEFAULT_DATA,
   
-  // Active container Id (from localStorage or first container)
-  activeContainerId: (() => {
-    const savedId = localStorage.getItem(ACTIVE_CONTAINER_ID_KEY);
+  // Active list Id (from localStorage or first list)
+  activeListId: (() => {
+    const savedId = localStorage.getItem(ACTIVE_LIST_ID_KEY);
     const data = JSON.parse(localStorage.getItem(DATA_KEY)) || DEFAULT_DATA;
-
+    
     // If savedId exists and is valid, return it
     if (savedId && data && data.some(c => c.id === savedId)) {
       return savedId;
     }
     
-    // Return the first container's id or an empty string if no containers exist
+    // Return the first list's id or an empty string if no lists exist
     return data.length > 0 ? data[0].id : "";
     
   })(),
-  setActiveContainer(id) {
-    this.activeContainerId = id;
-    localStorage.setItem(ACTIVE_CONTAINER_ID_KEY, id);
+  setActiveList(id) {
+    this.activeListId = id;
+    localStorage.setItem(ACTIVE_LIST_ID_KEY, id);
   },
-
-  // Get Container and Items by Id
-  getContainerById(id) {
+  
+  // Get List and Items by Id
+  getListById(id) {
     return this.data.find(c => c.id === id);
   },
   getItemsById(id) {
-    const container = this.getContainerById(id);
-    return container ? container.items : [];
+    const list = this.getListById(id);
+    return list ? list.items : [];
   },
   
   // Save Data
@@ -182,71 +179,117 @@ const state = PetiteVue.reactive({
     localStorage.setItem(DATA_KEY, JSON.stringify(this.data));
   },
   
-  // Add and Delete Container
-  addContainer() {
-    const newContainer = { id: generateId(), name: "", color: "none", items: [] };
-    this.data.push(newContainer);
+  // Add and Delete List
+  addList() {
+    const newList = { id: generateId(), name: "", color: "none", items: [{ id: generateId(), title: "Click to edit", desc: "", color: "none", date: "", completed: false }] };
+    this.data.push(newList);
     this.save();
     
-    // Set new active container, open setting modal and auto scroll
-    this.setActiveContainer(newContainer.id);
-    this.openSettingModal(newContainer.id);
+    // Set new active list, open setting modal and auto scroll
+    this.setActiveList(newList.id);
+    this.openSettingModal(newList.id);
     PetiteVue.nextTick(() => {
+      
+      // Fade in animation
+      const newListEl = document.getElementById(newList.id);
+      newListEl.classList.add('fade-in-animation');
+      setTimeout(() => {
+        newListEl.classList.remove('fade-in-animation');
+      }, 250);
+      
+      // Auto scroll
       topBar.scrollTo({
         left: topBar.scrollWidth,
         behavior: 'smooth'
       });
+      
     });
     
   },
-  deleteContainer(id) {
-    this.data = this.data.filter(c => c.id !== id);
+  deleteList(id) {
     
-    // If the deleted container was the active one, set the active container to the first one or empty if none left
-    if (this.data.length > 0) {
-      if (this.activeContainerId === id) {
-        this.setActiveContainer(this.data[0].id);
+    // Get deleted list's index before deleting it
+    const deletedIndex = this.data.findIndex(c => c.id === id);
+    
+    // Fade out animation
+    const deleteListEl = document.getElementById(id);
+    deleteListEl.classList.add('fade-out-animation');
+    setTimeout(() => {
+      deleteListEl.classList.remove('fade-out-animation');
+      
+      // Delete the list
+      this.data = this.data.filter(c => c.id !== id);
+      
+      // If the deleted list was the active one
+      if (this.activeListId === id) {
+        if (this.data.length > 0) {
+          const nextIndex = Math.max(0, deletedIndex - 1);
+          this.setActiveList(this.data[nextIndex].id); // Set the active list to the left one, else right
+        } else {
+          this.setActiveList(""); // Set to empty if no list available
+        }
       }
-    } else {
-      this.setActiveContainer("");
-    }
+      
+    }, 200);
     
     this.save();
   },
   
   // Add and Delete Item
-  addItem(containerId) {
+  addItem(listId) {
     const newItem = { id: generateId(), title: "", desc: "", color: "none", date: "", completed: false };
-    this.getItemsById(containerId).push(newItem);
+    this.getItemsById(listId).push(newItem);
     this.save();
     
-    // Open Edit Modal and auto scroll
+    // Open Edit Modal
     this.pressStartTime = Date.now();
     this.openEditModal(newItem);
     PetiteVue.nextTick(() => {
-      // IMPROVEMENTS when there's multiple container
-      itemsContainer.forEach(container => {
-        container.scrollTo({
-          top: container.scrollHeight,
-          behavior: 'smooth'
-        });
+      
+      // Fade in animation
+      const newItemEl = document.getElementById(newItem.id);
+      newItemEl.classList.add('fade-in-animation');
+      setTimeout(() => {
+        newItemEl.classList.remove('fade-in-animation');
+      }, 250);
+      
+      // Auto scroll
+      lists.scrollTo({
+        top: lists.scrollHeight,
+        behavior: 'smooth'
       });
+      
     });
     
   },
-  deleteItem(containerId, index) {
-    const container = this.getContainerById(containerId);
-    if (container.items[index]) {
-      container.items.splice(index, 1);
-      this.save();
-      if ('vibrate' in navigator) navigator.vibrate([20, 50, 20]);
+  deleteItem(listId, index) {
+    const list = this.getListById(listId);
+    if (list.items[index]) {
+      
+      // Fade out animation
+      const deleteItemEl = document.getElementById(list.items[index].id);
+      deleteItemEl.classList.add('fade-out-animation');
+      setTimeout(() => {
+        deleteItemEl.classList.remove('fade-out-animation');
+        
+        // Delete, save, and vibrate
+        list.items.splice(index, 1);
+        this.save();
+        if ('vibrate' in navigator) navigator.vibrate([20, 50, 20]);
+        
+      }, 200);
+      
     }
   },
   
   // Overlay
   showingOverlay: false,
   onOverlayClick() {
-    this.closeEditModal();
+    if (!editModal.classList.contains('hidden')) {
+      this.closeEditModal();
+    } else if (!settingModal.classList.contains('hidden')) {
+      this.closeSettingModal();
+    }
   },
   
   // Edit Modal (about items)
@@ -270,6 +313,8 @@ const state = PetiteVue.reactive({
     // Target the item (via editingItem), show overlay and edit modal
     this.editingItem = { ...item };
     this.showingOverlay = true;
+    editModal.classList.remove('slide-out-animation');
+    editModal.classList.add('slide-in-animation');
     showBottomBarChild(editModal);
     
   },
@@ -278,13 +323,19 @@ const state = PetiteVue.reactive({
   closeEditModal() {
     this.editingItem = { id: "", title: "", desc: "", color: "none", date: "", completed: false };
     this.showingOverlay = false;
-    showBottomBarChild(toolbar);
+    
+    editModal.classList.remove('slide-in-animation');
+    editModal.classList.add('slide-out-animation');
+    setTimeout(() => {
+      showBottomBarChild(toolbar);
+    }, 250);
+    
   },
   
-  saveEditModal(containerId) {
+  saveEditModal(listId) {
     
     // Find the actual item (via id) and save it
-    const targetItems = this.getItemsById(containerId);
+    const targetItems = this.getItemsById(listId);
     const index = targetItems.findIndex(i => i.id === this.editingItem.id);
     
     // Loop through all keys and save
@@ -311,34 +362,42 @@ const state = PetiteVue.reactive({
     return date < this.currentDate();
   },
   
-  // Setting Modal (about containers)
-  editingContainer: { id: "", name: "", color: "none", items: [] },
+  // Setting Modal (about lists)
+  editingList: { id: "", name: "", color: "none", items: [] },
   
-  openSettingModal(containerId) {
+  openSettingModal(listId) {
     
-    // Target the container (via editingContainer), show overlay and setting modal
-    this.editingContainer = { ...this.getContainerById(containerId) };
+    // Target the list (via editingList), show overlay and setting modal
+    this.editingList = { ...this.getListById(listId) };
     this.showingOverlay = true;
+    settingModal.classList.remove('slide-out-animation');
+    settingModal.classList.add('slide-in-animation');
     showBottomBarChild(settingModal);
     
   },
   
-  // Reset editingContainer, hide overlay and setting modal
+  // Reset editingList, hide overlay and setting modal
   closeSettingModal() {
-    this.editingContainer = { id: "", name: "", color: "none", items: [] };
+    this.editingList = { id: "", name: "", color: "none", items: [] };
     this.showingOverlay = false;
-    showBottomBarChild(toolbar);
+    
+    settingModal.classList.remove('slide-in-animation');
+    settingModal.classList.add('slide-out-animation');
+    setTimeout(() => {
+      showBottomBarChild(toolbar);
+    }, 250);
+    
   },
   
-  saveSettingModal(containerId) {
+  saveSettingModal(listId) {
     
-    // Find the actual container (via id) and save it
-    const targetContainer = this.getContainerById(containerId);
+    // Find the actual list (via id) and save it
+    const targetList = this.getListById(listId);
     
     // Loop through all keys and save
-    Object.keys(this.editingContainer).forEach(key => {
-      const value = this.editingContainer[key];
-      targetContainer[key] = typeof value === 'string' ? value.trim() : value;
+    Object.keys(this.editingList).forEach(key => {
+      const value = this.editingList[key];
+      targetList[key] = typeof value === 'string' ? value.trim() : value;
     });
     this.save();
     
@@ -355,104 +414,104 @@ state.save();
 // ------------------------------
 // SortableJS - Items
 // ------------------------------
-itemsContainer.forEach(container => {
-  Sortable.create(container, {
-    
-    // Basic Settings
-    animation: 250,
-    handle: '.item',
-    
-    // Sortable Classes
-    chosenClass: 'sortable-chosen',
-    fallbackClass: 'sortable-fallback',
-    ghostClass: 'sortable-ghost',
-    forceFallback: true,
-    fallbackOnBody: true,
-    
-    // Delay
-    delay: isTouchDevice ? 250 : 0, // IMPROVEMENTS when dragging with mouse
-    delayOnTouchOnly: false,
-    touchStartThreshold: 5,
-    
-    // Auto Scroll
-    scroll: true,
-    scrollSensitivity: 150, // IMPROVEMENTS when auto scrolling down (trash can problem)
-    scrollSpeed: 10,
-    
-    // If is touch device, vibrate and show trash can when choosing item
-    onChoose() {
-      if ('vibrate' in navigator) navigator.vibrate(30);
-      if (isTouchDevice) showBottomBarChild(trashCan);
-    },
-    
-    // If not touch device, show trash can only when starting to drag item
-    onStart() {
-      state.isDragging = true;
-      if (!isTouchDevice) showBottomBarChild(trashCan);
-    },
-    
-    // If no overlay is showing, show add item button when unchoosing item
-    onUnchoose() {
-      setTimeout(() => {
-        if (!state.showingOverlay) {
-          showBottomBarChild(toolbar);
-        }
-      }, 0);
-    },
-    
-    // When finish dragging
-    onEnd(evt) {
-      
-      // Reset dragging state
-      setTimeout(() => {
-        state.isDragging = false;
-      }, 0);
-      
-      // Get the target container
-      const containerId = container.dataset.containerId;
-      const targetContainer = state.getContainerById(containerId);
-      
-      // Get the touch/cursor position
-      const ogEvt = evt.originalEvent;
-      let touchX = 0;
-      let touchY = 0;
-      
-      if (ogEvt.changedTouches && ogEvt.changedTouches.length > 0) {
-        touchX = ogEvt.changedTouches[0].clientX;
-        touchY = ogEvt.changedTouches[0].clientY;
-      } else {
-        touchX = ogEvt.clientX;
-        touchY = ogEvt.clientY;
+// lists.forEach(list => {
+Sortable.create(lists, { // RWD Change
+  
+  // Basic Settings
+  animation: 250,
+  handle: '.item',
+  
+  // Sortable Classes
+  chosenClass: 'sortable-chosen',
+  fallbackClass: 'sortable-fallback',
+  ghostClass: 'sortable-ghost',
+  forceFallback: true,
+  fallbackOnBody: true,
+  
+  // Delay
+  delay: isTouchDevice ? 250 : 0, // IMPROVEMENTS when dragging with mouse
+  delayOnTouchOnly: false,
+  touchStartThreshold: 5,
+  
+  // Auto Scroll
+  scroll: true,
+  scrollSensitivity: 150, // IMPROVEMENTS when auto scrolling down (trash can problem)
+  scrollSpeed: 10,
+  
+  // If is touch device, vibrate and show trash can when choosing item
+  onChoose() {
+    if ('vibrate' in navigator) navigator.vibrate(30);
+    if (isTouchDevice) showBottomBarChild(trashCan);
+  },
+  
+  // If not touch device, show trash can only when starting to drag item
+  onStart() {
+    state.isDragging = true;
+    if (!isTouchDevice) showBottomBarChild(trashCan);
+  },
+  
+  // If no overlay is showing, show add item button when unchoosing item
+  onUnchoose() {
+    setTimeout(() => {
+      if (!state.showingOverlay) {
+        showBottomBarChild(toolbar);
       }
-      
-      const dropTarget = document.elementFromPoint(touchX, touchY);
-      const isDroppedInTrash = trashCan.contains(dropTarget);
-      
-      // If dropped in trash can, delete the item, save, and vibrate
-      if (isDroppedInTrash) {
-        state.deleteItem(containerId, evt.oldIndex)
-        return;
-      }
-      
-      // Return if the position didn't change
-      if (evt.oldIndex === evt.newIndex) return;
-      
-      // Clone the original items and change the item position in it
-      const updatedItems = [...targetContainer.items];
-      const [movedItem] = updatedItems.splice(evt.oldIndex, 1);
-      updatedItems.splice(evt.newIndex, 0, movedItem);
-      
-      // Update original items and save
-      targetContainer.items = updatedItems;
-      state.save();
-      
+    }, 0);
+  },
+  
+  // When finish dragging
+  onEnd(evt) {
+    
+    // Reset dragging state
+    setTimeout(() => {
+      state.isDragging = false;
+    }, 0);
+    
+    // Get the target list
+    const listId = lists.dataset.listId;
+    const targetList = state.getListById(listId);
+    
+    // Get the touch/cursor position
+    const ogEvt = evt.originalEvent;
+    let touchX = 0;
+    let touchY = 0;
+    
+    if (ogEvt.changedTouches && ogEvt.changedTouches.length > 0) {
+      touchX = ogEvt.changedTouches[0].clientX;
+      touchY = ogEvt.changedTouches[0].clientY;
+    } else {
+      touchX = ogEvt.clientX;
+      touchY = ogEvt.clientY;
     }
     
-  });
+    const dropTarget = document.elementFromPoint(touchX, touchY);
+    const isDroppedInTrash = trashCan.contains(dropTarget);
+    
+    // If dropped in trash can, delete the item, save, and vibrate
+    if (isDroppedInTrash) {
+      state.deleteItem(listId, evt.oldIndex)
+      return;
+    }
+    
+    // Return if the position didn't change
+    if (evt.oldIndex === evt.newIndex) return;
+    
+    // Clone the original items and change the item position in it
+    const updatedItems = [...targetList.items];
+    const [movedItem] = updatedItems.splice(evt.oldIndex, 1);
+    updatedItems.splice(evt.newIndex, 0, movedItem);
+    
+    // Update original items and save
+    targetList.items = updatedItems;
+    state.save();
+    
+  }
+  
 });
+// });
 
 // ------------------------------
-// SortableJS - Containers
+// SortableJS - Lists
 // ------------------------------
 Sortable.create(topBar, {
   
@@ -474,7 +533,7 @@ Sortable.create(topBar, {
   touchStartThreshold: 5,
   
   // Auto Scroll
-  scroll: true,
+  scroll: true, // IMPROVEMENTS auto scroll sometimes not working
   scrollSensitivity: 100,
   scrollSpeed: 5,
   
@@ -483,10 +542,10 @@ Sortable.create(topBar, {
     // Return if the position didn't change
     if (evt.oldIndex === evt.newIndex) return;
     
-    // Clone the original data and change the container position in it
+    // Clone the original data and change the list position in it
     const updatedData = [...state.data];
-    const [movedContainer] = updatedData.splice(evt.oldIndex, 1);
-    updatedData.splice(evt.newIndex, 0, movedContainer);
+    const [movedList] = updatedData.splice(evt.oldIndex, 1);
+    updatedData.splice(evt.newIndex, 0, movedList);
     
     // Update original data and save
     state.data = updatedData;

@@ -79,7 +79,7 @@
   <script src="./script.js" defer></script>
   
 </head>
-<body v-scope v-cloak class="w-[100svw] h-[100svh] overflow-hidden select-none" :style="{ backgroundColor: (PALETTE[getContainerById(activeContainerId)?.color] || PALETTE['none']).bgColor }">
+<body v-scope v-cloak class="w-[100svw] h-[100svh] overflow-hidden select-none" :style="{ backgroundColor: (PALETTE[getListById(activeListId)?.color] || PALETTE['none']).bgColor }">
   
   <!-- Overlay -->
   <div
@@ -93,13 +93,14 @@
     <!-- Top Bar -->
     <section onwheel="this.scrollLeft += event.deltaY" id="top-bar" class="relative flex items-center bg-gray-1 border-b border-gray-3 overflow-x-auto overflow-y-hidden overscroll-none no-scrollbar">
       
-      <!-- Container Tabs -->
+      <!-- List Tabs -->
       <div
-        v-for="container in data"
-        :key="container.id"
-        @click="setActiveContainer(container.id)"
+        v-for="list in data"
+        :key="list.id"
+        :id="list.id"
+        @click="setActiveList(list.id)"
         :style="(() => {
-          const theme = PALETTE[container.color] || PALETTE['none'];
+          const theme = PALETTE[list.color] || PALETTE['none'];
           return {
             backgroundColor: theme.itemColor, // Use itemColor for the tab background
             color: theme.textColor,
@@ -107,13 +108,13 @@
         })()"
         class="tabs h-full text-sm bg-white-black border-r border-gray-2 px-4 py-2 flex justify-center items-center gap-2 shrink-0 whitespace-nowrap"
       >
-        <span>{{ container.name || 'New Container' }}</span>
-        <button @click.stop="deleteContainer(container.id)" class="cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--red-9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+        <span>{{ list.name || 'New List' }}</span>
+        <button @click.stop="deleteList(list.id)" class="cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--red-9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
       </div>
       
-      <!-- Add Container Button -->
+      <!-- Add List Button -->
       <button
-        @click="addContainer()"
+        @click="addList()"
         class="sticky top-0 right-0 ml-auto h-full bg-white-black text-sm px-4 py-2 shrink-0 flex items-center gap-2 whitespace-nowrap cursor-pointer"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gray-11)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5H3"/><path d="M11 12H3"/><path d="M16 19H3"/><path d="M18 9v6"/><path d="M21 12h-6"/></svg>
@@ -122,13 +123,14 @@
       
     </section>
     
-    <!-- Containers -->
-    <section :data-container-id="activeContainerId" class="items-container flex-1 flex flex-col overflow-x-hidden overflow-y-auto">
+    <!-- Lists -->
+    <section :data-list-id="activeListId" id="lists" class="flex-1 flex flex-col overflow-x-hidden overflow-y-auto">
       
       <!-- Items -->
       <div
-        v-for="item in getItemsById(activeContainerId)"
+        v-for="item in getItemsById(activeListId)"
         :key="item.id"
+        :id="item.id"
         @pointerdown="onItemPointerDown($event)"
         @click="openEditModal(item)"
         :style="(() => {
@@ -167,15 +169,16 @@
 
       <!-- Placeholder -->
       <div
-        v-if="getItemsById(activeContainerId).length === 0"
-        :style="{ color: (PALETTE[getContainerById(activeContainerId)?.color] || PALETTE['none']).textColor }"
-        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center font-semibold flex flex-col items-center opacity-75"
+        v-if="!activeListId || getItemsById(activeListId).length === 0"
+        :style="{ color: (PALETTE[getListById(activeListId)?.color] || PALETTE['none']).textColor }"
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center flex flex-col items-center opacity-75"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/></svg>
-        <span class="text-lg">All caught up!</span>
-        <span>Click the "+" button to add items</span>
+        <svg v-if="activeListId" xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/></svg>
+        <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5H3"/><path d="M16 12H3"/><path d="M11 19H3"/><path d="m15 18 2 2 4-4"/></svg>
+        <span class="font-semibold">{{ activeListId ? 'All caught up!' : 'No list selected' }}</span>
+        <span class="text-sm font-medium">{{ activeListId ? 'Click the "+" button to add items' : 'Create or select a list to get started' }}</span>
       </div>
-
+      
     </section>
     
     <!-- Bottom Bar -->
@@ -188,8 +191,8 @@
       
       <!-- Toolbar -->
       <div id="toolbar" class="touch-manipulation bg-white-black rounded-full px-4 py-2 flex gap-2">
-        <button @click="addItem(activeContainerId)" class="block text-lg bg-gray-2 rounded-full px-4 py-2 cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gray-12)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
-        <button @click="openSettingModal(activeContainerId)" class="block text-lg bg-gray-2 rounded-full px-4 py-2 cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gray-12)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg></button>
+        <button @click="addItem(activeListId)" class="block text-lg bg-gray-2 rounded-full px-4 py-2 cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gray-12)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
+        <button @click="openSettingModal(activeListId)" class="block text-lg bg-gray-2 rounded-full px-4 py-2 cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gray-12)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg></button>
       </div>
       
       <!-- Edit Modal -->
@@ -237,7 +240,7 @@
         
         <!-- Save Button -->
         <button 
-          @click="saveEditModal(activeContainerId)"
+          @click="saveEditModal(activeListId)"
           class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer border focus-visible:border-gray-1"
         >Save</button>
         
@@ -250,8 +253,8 @@
         <input
           type="text"
           @keyup.enter="$event.target.blur()"
-          v-model="editingContainer.name"
-          placeholder="New Container"
+          v-model="editingList.name"
+          placeholder="New List"
           class="font-medium bg-gray-2 border border-gray-4 rounded-xl px-3 py-2 outline-none focus-visible:border-gray-12"
         >
         
@@ -261,9 +264,9 @@
             type="radio"
             v-for="(colorName, colorKey) in PALETTE"
             :key="colorKey"
-            :name="editingContainer.id"
+            :name="editingList.id"
             :value="colorKey"
-            v-model="editingContainer.color"
+            v-model="editingList.color"
             :style="{ backgroundColor: colorName.previewColor }"
             class="w-6 h-6 rounded-full ring-1 ring-offset-1 ring-gray-3 appearance-none cursor-pointer transition-transform checked:ring-offset-2 checked:ring-gray-9 checked:scale-120"
           >
@@ -271,7 +274,7 @@
         
         <!-- Save Button -->
         <button 
-          @click="saveSettingModal(activeContainerId)"
+          @click="saveSettingModal(activeListId)"
           class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer border focus-visible:border-gray-1"
         >Save</button>
         

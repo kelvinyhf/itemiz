@@ -319,6 +319,7 @@
   display: none !important;
 }
 
+/* Utilities */
 @utility liquid-glass {
   background-color: rgba(255, 255, 255, 0.3);
   backdrop-filter: blur(20px) saturate(180%);
@@ -354,9 +355,60 @@
   }
 }
 
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in-animation {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.fade-out-animation {
+  animation: fadeOut 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-animation  {
+  animation: slideIn 0.25s ease-out;
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.slide-out-animation {
+  animation: slideOut 0.25s ease-out;
+}
+
 /* SortableJS */
 .sortable-chosen {
-  box-shadow: none;
+  z-index: 3;
 }
 
 @media (pointer: coarse) {
@@ -367,7 +419,7 @@
 
 .sortable-fallback {
   box-shadow: 0 2px 10px var(--color-alpha-5);
-  z-index: 50;
+  z-index: 2;
 }
 
 .sortable-ghost {
