@@ -91,7 +91,7 @@
   <main class="h-full flex flex-col justify-between">
     
     <!-- Top Bar -->
-    <section onwheel="this.scrollLeft += event.deltaY" id="top-bar" class="relative flex items-center bg-gray-1 border-b border-gray-3 overflow-x-auto overflow-y-hidden overscroll-none no-scrollbar">
+    <section onwheel="this.scrollLeft += event.deltaY" id="top-bar" class="relative flex items-end gap-4 bg-gray-2 border-b border-gray-2 overflow-x-auto overflow-y-hidden overscroll-none no-scrollbar">
       
       <!-- List Tabs -->
       <div
@@ -102,11 +102,11 @@
         :style="(() => {
           const theme = PALETTE[list.color] || PALETTE['none'];
           return {
-            backgroundColor: theme.itemColor, // Use itemColor for the tab background
+            backgroundColor: theme.tabColor,
             color: theme.textColor,
           };
         })()"
-        class="tabs h-full text-sm bg-white-black border-r border-gray-2 px-4 py-2 flex justify-center items-center gap-2 shrink-0 whitespace-nowrap"
+        class="tabs h-[75%] text-sm bg-gray-1 shadow-[0_-1px_5px_rgba(0,0,0,0.01)] px-4 py-2 first:ml-4 last:mr-4 rounded-t-lg flex justify-center items-center gap-2 shrink-0 whitespace-nowrap"
       >
         <span>{{ list.name || 'New List' }}</span>
         <button @click.stop="deleteList(list.id)" class="cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--red-9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
@@ -115,7 +115,7 @@
       <!-- Add List Button -->
       <button
         @click="addList()"
-        class="sticky top-0 right-0 ml-auto h-full bg-white-black text-sm px-4 py-2 shrink-0 flex items-center gap-2 whitespace-nowrap cursor-pointer"
+        class="sticky top-0 right-0 ml-auto h-full bg-white-black text-sm rounded-l-xl p-4 shadow-[-2px_0_5px_rgba(0,0,0,0.02)] shrink-0 flex items-center gap-2 whitespace-nowrap cursor-pointer"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gray-11)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5H3"/><path d="M11 12H3"/><path d="M16 19H3"/><path d="M18 9v6"/><path d="M21 12h-6"/></svg>
         <span class="text-gray-11 font-medium">Add</span>
@@ -141,12 +141,21 @@
             borderColor: theme.borderColor
           };
         })()"
-        class="item p-4 pr-8 last:mb-32 border-b flex items-center gap-2 cursor-pointer"
+        class="item p-4 pr-8 m-6 mb-0 last:mb-32 rounded-xl shadow-[0_5px_5px_rgba(0,0,0,0.01)] border-b-2 flex items-center gap-2"
       >
         
         <!-- Checkbox -->
-        <label @pointerdown.stop @click.stop class="shrink-0 flex justify-center items-center px-4 h-full">
-          <input type="checkbox" v-model="item.completed" @change="save()" :class="{ 'opacity-50': item.completed }">
+        <label @pointerdown.stop @click.stop class="shrink-0 flex justify-center items-center px-4 h-full cursor-pointer">
+          <input
+            type="checkbox"
+            v-model="item.completed"
+            @change="save()"
+            :class="{ 'opacity-50': item.completed }"
+            class="sr-only peer"
+          >
+          <div class="w-5 h-5 border-2 border-gray-6 rounded-md bg-white-black flex items-center justify-center transition-all duration-200 peer-checked:bg-gray-7 peer-checked:border-gray-8 peer-checked:opacity-50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white-black pointer-events-none" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          </div>
         </label>
         
         <!-- Title and Description -->
@@ -158,11 +167,8 @@
         <!-- Due Date -->
         <span
           v-if="item.date"
-          :class="[
-            isOverDue(item.date) ? 'text-red-11' : 'text-gray-11',
-            { 'opacity-50': item.completed }
-          ]"
-          class="shrink-0 text-xs ml-2"
+          :class="{ 'opacity-50': item.completed }"
+          class="shrink-0 text-xs text-gray-11 ml-2"
         >{{ formatDate(item.date) }}</span>
         
       </div>
@@ -182,17 +188,17 @@
     </section>
     
     <!-- Bottom Bar -->
-    <section id="bottom-bar" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full min-h-[100px] z-99 flex justify-center items-center bg-gradient-to-b from-transparent to-gray-a4">
+    <section id="bottom-bar" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full min-h-[125px] z-99 flex justify-center items-center bg-gradient-to-b from-transparent to-gray-a4">
       
       <!-- Trash Can -->
-      <div id="trash-can" class="absolute top-0 left-0 w-[calc(100%-2rem)] h-[calc(100%-2rem)] m-4 bg-red-2 border-2 border-dashed border-red-4 rounded-md hidden flex justify-center items-center">
+      <div id="trash-can" class="absolute top-0 left-0 w-[calc(100%-3rem)] h-[calc(100%-3rem)] m-6 bg-red-2 border-2 border-dashed border-red-4 rounded-xl opacity-85 hidden flex justify-center items-center">
         <span class="text-red-9 text-sm">Drop here to delete</span>
       </div>
       
       <!-- Toolbar -->
-      <div id="toolbar" class="touch-manipulation bg-white-black rounded-full px-4 py-2 flex gap-2">
-        <button @click="addItem(activeListId)" class="block text-lg bg-gray-2 rounded-full px-4 py-2 cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gray-12)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
-        <button @click="openSettingModal(activeListId)" class="block text-lg bg-gray-2 rounded-full px-4 py-2 cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gray-12)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg></button>
+      <div id="toolbar" class="touch-manipulation bg-white-black rounded-2xl px-4 py-2 flex gap-4">
+        <button @click="addItem(activeListId)" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
+        <button @click="openSettingModal(activeListId)" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg></button>
       </div>
       
       <!-- Edit Modal -->

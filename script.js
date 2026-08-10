@@ -161,8 +161,20 @@ const state = PetiteVue.reactive({
     
   })(),
   setActiveList(id) {
+    
+    // Remove old list's active style and add to new one
+    const activeStyle = 'font-medium scale-105';
+    document.getElementById(this.activeListId).classList.remove(...activeStyle.split(' '));
+    document.getElementById(id).classList.add(...activeStyle.split(' '));
+    
+    // Set new active list
     this.activeListId = id;
     localStorage.setItem(ACTIVE_LIST_ID_KEY, id);
+    
+  },
+  initActiveListStyle() {
+    const activeStyle = 'font-medium scale-105';
+    document.getElementById(this.activeListId).classList.add(...activeStyle.split(' '));
   },
   
   // Get List and Items by Id
@@ -185,10 +197,11 @@ const state = PetiteVue.reactive({
     this.data.push(newList);
     this.save();
     
-    // Set new active list, open setting modal and auto scroll
-    this.setActiveList(newList.id);
-    this.openSettingModal(newList.id);
     PetiteVue.nextTick(() => {
+      
+      // Set new active list and open setting modal
+      this.setActiveList(newList.id);
+      this.openSettingModal(newList.id);
       
       // Fade in animation
       const newListEl = document.getElementById(newList.id);
@@ -230,9 +243,9 @@ const state = PetiteVue.reactive({
         }
       }
       
+      this.save();
     }, 200);
     
-    this.save();
   },
   
   // Add and Delete Item
@@ -407,8 +420,11 @@ const state = PetiteVue.reactive({
   
 });
 
-// Create App and save once
+// ------------------------------
+// Initialization
+// ------------------------------
 PetiteVue.createApp(state).mount('body');
+state.initActiveListStyle();
 state.save();
 
 // ------------------------------
