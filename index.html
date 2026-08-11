@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="overscroll-none">
 <head>
   
   <!-- Theme Detection -->
@@ -79,16 +79,16 @@
   <script src="./script.js" defer></script>
   
 </head>
-<body v-scope v-cloak class="w-[100svw] h-[100svh] overflow-hidden select-none" :style="{ backgroundColor: (PALETTE[getListById(activeListId)?.color] || PALETTE['none']).bgColor }">
+<body v-scope v-cloak class="w-[100svw] h-[100svh] overflow-hidden overscroll-none select-none" :style="{ backgroundColor: (PALETTE[getListById(activeListId)?.color] || PALETTE['none']).bgColor }">
   
   <!-- Overlay -->
   <div
     v-if="showingOverlay"
     @click="onOverlayClick()"
-    class="fixed top-0 left-0 w-full h-full z-98 bg-alpha-10"
+    class="fixed top-0 left-0 w-full h-full z-97 bg-alpha-10"
   ></div>
   
-  <main class="h-full flex flex-col justify-between">
+  <main class="h-full flex flex-col justify-between overscroll-none">
     
     <!-- Top Bar -->
     <section onwheel="this.scrollLeft += event.deltaY" id="top-bar" class="relative flex items-end gap-4 bg-gray-2 border-b border-gray-2 overflow-x-auto overflow-y-hidden overscroll-none no-scrollbar">
@@ -98,7 +98,11 @@
         v-for="list in data"
         :key="list.id"
         :id="list.id"
-        @click="setActiveList(list.id)"
+        @pointerdown="onListPointerDown($event)"
+        @click="
+          if (checkActiveList(list.id)) openSettingModal(activeListId);
+          setActiveList(list.id);
+        "
         :style="(() => {
           const theme = PALETTE[list.color] || PALETTE['none'];
           return {
@@ -187,41 +191,41 @@
       
     </section>
     
-    <!-- Bottom Bar -->
-    <section id="bottom-bar" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full min-h-[125px] z-99 flex justify-center items-center bg-gradient-to-b from-transparent to-gray-a4">
-      
-      <!-- Trash Can -->
-      <div id="trash-can" class="absolute top-0 left-0 w-[calc(100%-3rem)] h-[calc(100%-3rem)] m-6 bg-red-2 border-2 border-dashed border-red-4 rounded-xl opacity-85 hidden flex justify-center items-center">
-        <span class="text-red-9 text-sm">Drop here to delete</span>
-      </div>
-      
-      <!-- Toolbar -->
-      <div id="toolbar" class="touch-manipulation bg-white-black rounded-2xl px-4 py-2 flex gap-4">
-        <button @click="addItem(activeListId)" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
-        <button @click="openSettingModal(activeListId)" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg></button>
-      </div>
+    <!-- Modals -->
+    <section id="modals" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full z-99 flex justify-center items-center">
       
       <!-- Edit Modal -->
-      <div id="edit-modal" class="w-full bg-white-black p-4 rounded-t-2xl hidden flex flex-col gap-4">
+      <div
+        id="edit-modal"
+        @touchstart="startY = $event.touches[0].clientY; startTime = Date.now()"
+        @touchend="
+          const dist = $event.changedTouches[0].clientY - startY;
+          const time = Date.now() - startTime;
+          if (dist > 30 && time < 250) closeEditModal(activeListId);
+        "
+        class="w-full bg-white-black p-4 pt-3 rounded-t-2xl hidden flex flex-col gap-2"
+      >
+        <div v-if="isTouchDevice" class="w-10 h-1 bg-gray-a4 mx-auto rounded-full"></div>
         
         <!-- Title Input -->
         <input
+          id="edit-modal-title-input"
           type="text"
           @keyup.enter="$event.target.blur()"
           v-model="editingItem.title"
           placeholder="New Item"
-          class="font-medium bg-gray-2 border border-gray-4 rounded-xl px-3 py-2 outline-none focus-visible:border-gray-12"
+          class="font-medium bg-gray-2 border border-gray-4 rounded-xl px-3 py-2 mb-2 outline-none focus-visible:border-gray-12"
         >
         
         <!-- Description Input -->
         <textarea
           v-model="editingItem.desc"
           placeholder="Description (optional)"
-          class="min-h-[3lh] max-h-[10lh] [field-sizing:content] bg-gray-2 border border-gray-4 rounded-xl px-3 py-2 outline-none focus-visible:border-gray-12 resize-none no-scrollbar"
+          class="min-h-[3lh] max-h-[10lh] [field-sizing:content] bg-gray-2 border border-gray-4 rounded-xl px-3 py-2 mb-2 outline-none focus-visible:border-gray-12 resize-none no-scrollbar"
         ></textarea>
         
         <!-- Due Date Input -->
-        <label class="px-4 flex items-center gap-4">
+        <label class="px-4 mb-2 flex items-center gap-4">
           <span>Due Date:</span>
           <input
             type="date"
@@ -231,7 +235,7 @@
         </label>
         
         <!-- Color Selection -->
-        <div class="flex justify-center items-center gap-4 py-2">
+        <div class="flex justify-center items-center gap-4 py-2 mb-2">
           <input
             type="radio"
             v-for="(colorName, colorKey) in PALETTE"
@@ -244,24 +248,41 @@
           >
         </div>
         
-        <!-- Save Button -->
-        <button 
-          @click="saveEditModal(activeListId)"
-          class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer border focus-visible:border-gray-1"
-        >Save</button>
+        <!-- Cancal and Save Button -->
+        <div class="flex justify-center items-center gap-4 p-2">
+          <button 
+            @click="closeEditModal(activeListId)"
+            class="w-full p-2 bg-gray-2 text-gray-12 font-medium rounded-xl cursor-pointer hover:bg-gray-4 hover:text-gray-11 active:bg-gray-4 active:text-gray-11"
+          >Cancel</button>
+          <button 
+            @click="saveEditModal(activeListId)"
+            class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer hover:bg-gray-10 hover:text-gray-2 active:bg-gray-10 active:text-gray-2"
+          >Save</button>
+        </div>
         
       </div>
       
       <!-- Setting Modal -->
-      <div id="setting-modal" class="w-full bg-white-black p-4 rounded-t-2xl hidden flex flex-col gap-4">
+      <div
+        id="setting-modal"
+        @touchstart="startY = $event.touches[0].clientY; startTime = Date.now()"
+        @touchend="
+          const dist = $event.changedTouches[0].clientY - startY;
+          const time = Date.now() - startTime;
+          if (dist > 30 && time < 250) closeSettingModal(activeListId);
+        "
+        class="w-full bg-white-black p-4 pt-3 rounded-t-2xl hidden flex flex-col gap-2"
+      >
+        <div v-if="isTouchDevice" class="w-10 h-1 bg-gray-a4 mx-auto rounded-full"></div>
         
         <!-- Name Input -->
         <input
+          id="setting-modal-name-input"
           type="text"
           @keyup.enter="$event.target.blur()"
           v-model="editingList.name"
           placeholder="New List"
-          class="font-medium bg-gray-2 border border-gray-4 rounded-xl px-3 py-2 outline-none focus-visible:border-gray-12"
+          class="font-medium bg-gray-2 border border-gray-4 rounded-xl px-3 py-2 mb-2 outline-none focus-visible:border-gray-12"
         >
         
         <!-- Color Selection -->
@@ -274,16 +295,38 @@
             :value="colorKey"
             v-model="editingList.color"
             :style="{ backgroundColor: colorName.previewColor }"
-            class="w-6 h-6 rounded-full ring-1 ring-offset-1 ring-gray-3 appearance-none cursor-pointer transition-transform checked:ring-offset-2 checked:ring-gray-9 checked:scale-120"
+            class="w-6 h-6 mb-2 rounded-full ring-1 ring-offset-1 ring-gray-3 appearance-none cursor-pointer transition-transform checked:ring-offset-2 checked:ring-gray-9 checked:scale-120"
           >
         </div>
         
-        <!-- Save Button -->
-        <button 
-          @click="saveSettingModal(activeListId)"
-          class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer border focus-visible:border-gray-1"
-        >Save</button>
+        <!-- Cancal and Save Button -->
+        <div class="flex justify-center items-center gap-4 p-2">
+          <button 
+            @click="closeSettingModal(activeListId)"
+            class="w-full p-2 bg-gray-1 text-gray-12 font-medium rounded-xl cursor-pointer hover:bg-gray-4 hover:text-gray-11 active:bg-gray-4 active:text-gray-11"
+          >Cancel</button>
+          <button 
+            @click="saveSettingModal(activeListId)"
+            class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer hover:bg-gray-10 hover:text-gray-2 active:bg-gray-10 active:text-gray-2"
+          >Save</button>
+        </div>
         
+      </div>
+      
+    </section>
+    
+    <!-- Bottom Bar -->
+    <section id="bottom-bar" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full min-h-[125px] z-98 flex justify-center items-center bg-gradient-to-b from-transparent to-gray-a3">
+      
+      <!-- Toolbar -->
+      <div id="toolbar" class="touch-manipulation bg-white-black rounded-2xl px-4 py-2 flex gap-4">
+        <button @click="addItem(activeListId)" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
+        <button @click="openSettingModal(activeListId)" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg></button>
+      </div>
+      
+      <!-- Trash Can -->
+      <div id="trash-can" class="absolute top-0 left-0 w-[calc(100%-3rem)] h-[calc(100%-3rem)] m-6 bg-red-2 border-2 border-dashed border-red-4 rounded-xl opacity-85 hidden flex justify-center items-center">
+        <span class="text-red-9 text-sm">Drop here to delete</span>
       </div>
       
     </section>

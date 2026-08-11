@@ -390,6 +390,10 @@
   animation: slideIn 0.25s ease-out;
 }
 
+.slide-in-animation-fast {
+  animation: slideIn 0.15s ease-out;
+}
+
 @keyframes slideOut {
   from {
     transform: translateY(0);
@@ -403,7 +407,11 @@
 }
 
 .slide-out-animation {
-  animation: slideOut 0.25s ease-out;
+  animation: slideOut 0.25s linear;
+}
+
+.slide-out-animation-fast {
+  animation: slideOut 0.15s linear;
 }
 
 /* SortableJS */

@@ -118,19 +118,20 @@ function generateId() {
 // ------------------------------
 // DOM Elements
 // ------------------------------
-const lists = document.getElementById('lists');
 const topBar = document.getElementById('top-bar');
-const bottomBar = document.getElementById('bottom-bar');
-const toolbar = document.getElementById('toolbar');
+const lists = document.getElementById('lists');
+const modals = document.getElementById('modals');
 const editModal = document.getElementById('edit-modal');
 const settingModal = document.getElementById('setting-modal');
+const bottomBar = document.getElementById('bottom-bar');
+const toolbar = document.getElementById('toolbar');
 const trashCan = document.getElementById('trash-can');
 
 // ------------------------------
 // DOM Helpers
 // ------------------------------
-function showBottomBarChild(target) {
-  Array.from(bottomBar.children).forEach(child => {
+function showChild(target, container) {
+  Array.from(container.children).forEach(child => {
     child.classList.add('hidden');
   });
   if (target) {
@@ -160,12 +161,19 @@ const state = PetiteVue.reactive({
     return data.length > 0 ? data[0].id : "";
     
   })(),
+  checkActiveList(id) {
+    if (this.activeListId === id) return true;
+  },
   setActiveList(id) {
     
-    // Remove old list's active style and add to new one
-    const activeStyle = 'font-medium scale-105';
-    document.getElementById(this.activeListId).classList.remove(...activeStyle.split(' '));
-    document.getElementById(id).classList.add(...activeStyle.split(' '));
+    if (this.checkActiveList(id)) return;
+    
+    // Remove old list's active style (if available) and add to new one
+    if (id !== "") {
+      const activeStyle = 'font-semibold scale-105';
+      if (this.activeListId !== "") document.getElementById(this.activeListId).classList.remove(...activeStyle.split(' '));
+      document.getElementById(id).classList.add(...activeStyle.split(' '));
+    }
     
     // Set new active list
     this.activeListId = id;
@@ -173,7 +181,7 @@ const state = PetiteVue.reactive({
     
   },
   initActiveListStyle() {
-    const activeStyle = 'font-medium scale-105';
+    const activeStyle = 'font-semibold scale-105';
     document.getElementById(this.activeListId).classList.add(...activeStyle.split(' '));
   },
   
@@ -197,6 +205,8 @@ const state = PetiteVue.reactive({
     this.data.push(newList);
     this.save();
     
+    // Open Edit Modal
+    this.listPressStartTime = Date.now();
     PetiteVue.nextTick(() => {
       
       // Set new active list and open setting modal
@@ -244,7 +254,7 @@ const state = PetiteVue.reactive({
       }
       
       this.save();
-    }, 200);
+    }, 175);
     
   },
   
@@ -290,9 +300,20 @@ const state = PetiteVue.reactive({
         this.save();
         if ('vibrate' in navigator) navigator.vibrate([20, 50, 20]);
         
-      }, 200);
+      }, 175);
       
     }
+  },
+  
+  // Due Date Functions
+  currentDate() {
+    return new Date().toISOString().split('T')[0];
+  },
+  formatDate(date) {
+    return date.slice(5);
+  },
+  isOverDue(date) {
+    return date < this.currentDate();
   },
   
   // Overlay
@@ -328,7 +349,17 @@ const state = PetiteVue.reactive({
     this.showingOverlay = true;
     editModal.classList.remove('slide-out-animation');
     editModal.classList.add('slide-in-animation');
-    showBottomBarChild(editModal);
+    showChild(editModal, modals);
+    
+    // Slide out bottom bar
+    bottomBar.classList.add('slide-out-animation');
+    bottomBar.classList.remove('slide-in-animation');
+    
+    // Autofocus
+    PetiteVue.nextTick(() => {
+      const titleInput = document.getElementById('edit-modal-title-input');
+      if (!isTouchDevice) titleInput.focus();
+    });
     
   },
   
@@ -340,8 +371,12 @@ const state = PetiteVue.reactive({
     editModal.classList.remove('slide-in-animation');
     editModal.classList.add('slide-out-animation');
     setTimeout(() => {
-      showBottomBarChild(toolbar);
-    }, 250);
+      showChild(null, modals);
+    }, 225);
+    
+    // Slide out bottom bar
+    bottomBar.classList.remove('slide-out-animation');
+    bottomBar.classList.add('slide-in-animation');
     
   },
   
@@ -364,28 +399,40 @@ const state = PetiteVue.reactive({
     this.closeEditModal();
   },
   
-  // Due Date Functions
-  currentDate() {
-    return new Date().toISOString().split('T')[0];
-  },
-  formatDate(date) {
-    return date.slice(5);
-  },
-  isOverDue(date) {
-    return date < this.currentDate();
-  },
-  
   // Setting Modal (about lists)
+  listPressStartTime: null,
+  listIsDragging: false,
   editingList: { id: "", name: "", color: "none", items: [] },
   
+  // When pointer is down, start counting
+  onListPointerDown(evt) {
+    this.listPressStartTime = Date.now();
+  },
+  
   openSettingModal(listId) {
+    
+    // If dragging, return
+    if (this.listIsDragging) return;
+    
+    // If holding (>200ms) in mobile, return
+    if (isTouchDevice && (Date.now() - this.listPressStartTime > 200)) return;
     
     // Target the list (via editingList), show overlay and setting modal
     this.editingList = { ...this.getListById(listId) };
     this.showingOverlay = true;
     settingModal.classList.remove('slide-out-animation');
     settingModal.classList.add('slide-in-animation');
-    showBottomBarChild(settingModal);
+    showChild(settingModal, modals);
+    
+    // Slide out bottom bar
+    bottomBar.classList.add('slide-out-animation');
+    bottomBar.classList.remove('slide-in-animation');
+    
+    // Autofocus
+    PetiteVue.nextTick(() => {
+      const nameInput = document.getElementById('setting-modal-name-input');
+      if (!isTouchDevice) nameInput.focus();
+    });
     
   },
   
@@ -397,8 +444,12 @@ const state = PetiteVue.reactive({
     settingModal.classList.remove('slide-in-animation');
     settingModal.classList.add('slide-out-animation');
     setTimeout(() => {
-      showBottomBarChild(toolbar);
-    }, 250);
+      showChild(null, modals);
+    }, 225);
+    
+    // Slide out bottom bar
+    bottomBar.classList.remove('slide-out-animation');
+    bottomBar.classList.add('slide-in-animation');
     
   },
   
@@ -416,7 +467,11 @@ const state = PetiteVue.reactive({
     
     // Close setting modal
     this.closeSettingModal();
-  }
+  },
+  
+  // Swipe down var for modals
+  startY: 0,
+  startTime: 0
   
 });
 
@@ -457,22 +512,36 @@ Sortable.create(lists, { // RWD Change
   // If is touch device, vibrate and show trash can when choosing item
   onChoose() {
     if ('vibrate' in navigator) navigator.vibrate(30);
-    if (isTouchDevice) showBottomBarChild(trashCan);
+    if (isTouchDevice) {
+      setTimeout(() => {
+        showChild(trashCan, bottomBar);
+        trashCan.classList.remove('slide-out-animation-fast');
+        trashCan.classList.add('slide-in-animation-fast');
+      }, 150);
+    };
   },
   
   // If not touch device, show trash can only when starting to drag item
   onStart() {
     state.isDragging = true;
-    if (!isTouchDevice) showBottomBarChild(trashCan);
+    if (!isTouchDevice) {
+      setTimeout(() => {
+        showChild(trashCan, bottomBar);
+        trashCan.classList.remove('slide-out-animation-fast');
+        trashCan.classList.add('slide-in-animation-fast');
+      }, 150);
+    };
   },
   
-  // If no overlay is showing, show add item button when unchoosing item
+  // If no overlay is showing, show toolbar when unchoosing item
   onUnchoose() {
     setTimeout(() => {
       if (!state.showingOverlay) {
-        showBottomBarChild(toolbar);
+        showChild(toolbar, bottomBar);
+        toolbar.classList.remove('slide-out-animation-fast');
+        toolbar.classList.add('slide-in-animation-fast');
       }
-    }, 0);
+    }, 150);
   },
   
   // When finish dragging
@@ -553,7 +622,21 @@ Sortable.create(topBar, {
   scrollSensitivity: 100,
   scrollSpeed: 5,
   
+  // If is touch device, vibrate when choosing list
+  onChoose() {
+    if ('vibrate' in navigator) navigator.vibrate(30);
+  },
+  onStart() {
+    state.listIsDragging = true;
+  },
+  
+  // When finish dragging
   onEnd(evt) {
+    
+    // Reset dragging state
+    setTimeout(() => {
+      state.listIsDragging = false;
+    }, 0);
     
     // Return if the position didn't change
     if (evt.oldIndex === evt.newIndex) return;
