@@ -23,7 +23,7 @@
   <!-- Open Graph -->
   <meta property="og:title" content="Itemiz">
   <meta property="og:description" content="A minimalist, lightweight todo list web app with a simple and clean design.">
-  <meta property="og:image" content="IMAGE">
+  <meta property="og:image" content="https://itemiz.pages.dev/assets/images/open-graph-image.png">
   <meta property="og:url" content="https://itemiz.pages.dev/">
   <meta property="og:type" content="website">
   
@@ -31,7 +31,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Itemiz">
   <meta name="twitter:description" content="A minimalist, lightweight todo list web app with a simple and clean design.">
-  <meta name="twitter:image" content="IMAGE">
+  <meta name="twitter:image" content="https://itemiz.pages.dev/assets/images/open-graph-image.png">
   
   <!-- iOS Optimization -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -43,11 +43,12 @@
   <link rel="icon" type="image/svg+xml" sizes="any" href="/assets/images/favicon.svg">
   <link id="apple-touch-icon" rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
   <script>
-    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const iconTag = document.getElementById('apple-touch-icon');
-    if (isDark && iconTag) {
-      iconTag.href = '/assets/images/apple-touch-icon-dark.png';
+    function updateIcon() {
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.getElementById('apple-touch-icon').href = isDark ? './assets/images/apple-touch-icon-dark.png' : './assets/images/apple-touch-icon.png';
     }
+    updateIcon();
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateIcon());
   </script>
   
   <!-- CSS -->

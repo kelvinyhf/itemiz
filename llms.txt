@@ -1,2 +1,13 @@
 # Itemiz
-A minimalist, lightweight todo list web app with a simple and clean design.
+> A minimalist, lightweight todo list web app with a simple and clean design.
+Created by KelvinY.
+
+## Key Features
+- **Minimalist & Clean UI**: Designed for a clean, distraction-free task management experience.
+- **Lightweight & Fast**: Built with PetiteVue and Tailwind CSS for instant loading.
+- **Privacy-First**: Stores your tasks locally in the browser (`localStorage`).
+
+## Links
+- [Itemiz Web App](https://itemiz.pages.dev/)
+- [GitHub Repository](https://github.com/kelvinyhf/itemiz)
+- [Developer Profile](https://github.com/kelvinyhf)
