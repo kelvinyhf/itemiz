@@ -15,22 +15,22 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
   <!-- SEO Meta Tags -->
-  <title>Notick</title>
-  <meta name="description" content="DESC">
+  <title>Itemiz</title>
+  <meta name="description" content="A minimalist, lightweight todo list web app with a simple and clean design.">
   <meta name="author" content="KelvinY">
-  <link rel="canonical" href="https://notick.pages.dev/">
+  <link rel="canonical" href="https://itemiz.pages.dev/">
   
   <!-- Open Graph -->
-  <meta property="og:title" content="Notick">
-  <meta property="og:description" content="DESC">
+  <meta property="og:title" content="Itemiz">
+  <meta property="og:description" content="A minimalist, lightweight todo list web app with a simple and clean design.">
   <meta property="og:image" content="IMAGE">
-  <meta property="og:url" content="https://notick.pages.dev/">
+  <meta property="og:url" content="https://itemiz.pages.dev/">
   <meta property="og:type" content="website">
   
   <!-- Twitter Cards -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Notick">
-  <meta name="twitter:description" content="DESC">
+  <meta name="twitter:title" content="Itemiz">
+  <meta name="twitter:description" content="A minimalist, lightweight todo list web app with a simple and clean design.">
   <meta name="twitter:image" content="IMAGE">
   
   <!-- iOS Optimization -->
@@ -40,8 +40,15 @@
   <meta name="format-detection" content="telephone=no">
   
   <!-- External Files -->
-  <!-- <link rel="icon" type="image/[TYPE]+xml" sizes="any" href="FAV">
-  <link rel="apple-touch-icon" href="APPLE"> -->
+  <link rel="icon" type="image/svg+xml" sizes="any" href="/assets/images/favicon.svg">
+  <link id="apple-touch-icon" rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
+  <script>
+    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const iconTag = document.getElementById('apple-touch-icon');
+    if (isDark && iconTag) {
+      iconTag.href = '/assets/images/apple-touch-icon-dark.png';
+    }
+  </script>
   
   <!-- CSS -->
   <link rel="stylesheet" href="./assets/libraries/radix-colors.css">
@@ -193,6 +200,30 @@
     <!-- Modals -->
     <section id="modals" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full z-99 flex justify-center items-center">
       
+      <!-- About Modal -->
+      <div
+        id="about-modal"
+        @touchstart="startY = $event.touches[0].clientY; startTime = Date.now()"
+        @touchend="
+          const dist = $event.changedTouches[0].clientY - startY;
+          const time = Date.now() - startTime;
+          if (dist > 30 && time < 250) closeAboutModal();
+        "
+        class="w-full bg-white-black p-6 pt-3 rounded-t-2xl hidden flex flex-col gap-2"
+      >
+        <div v-if="isTouchDevice" class="w-10 h-1 bg-gray-a4 mx-auto rounded-full"></div>
+        
+        <!-- Content -->
+        <h1 class="text-2xl font-bold">Itemiz</h1>
+        <p>A minimalist, lightweight todo list web app designed with a simple and clean interface to help you organize daily tasks effortlessly.</p>
+        <p class="mb-4">Made with &#9825; by KelvinY</p>
+        <button
+          @click="closeAboutModal()"
+          class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer hover:bg-gray-10 hover:text-gray-2 active:bg-gray-10 active:text-gray-2"
+        >Close</button>
+        
+      </div>
+      
       <!-- Edit Modal -->
       <div
         id="edit-modal"
@@ -308,7 +339,7 @@
             @click="
               if (!confirmDelete) {
                 confirmDelete = true;
-                setTimeout(() => confirmDelete = false, 3000);
+                setTimeout(() => confirmDelete = false, 2000);
               } else {
                 deleteList(activeListId);
                 closeSettingModal();
@@ -318,7 +349,7 @@
             class="shrink-0 p-2 bg-red-2 text-red-11 border border-red-3 font-medium rounded-xl flex items-center cursor-pointer hover:bg-red-4 hover:text-red-9 active:bg-red-4 active:text-red-9"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            <span :class="confirmDelete ? 'max-w-md opacity-100 ml-2' : 'max-w-0 opacity-0'" class="block text-md font-medium transition-[max-width,opacity] duration-200 overflow-hidden whitespace-nowrap">Sure?</span>
+            <span :class="confirmDelete ? 'max-w-md opacity-100 mx-2' : 'max-w-0 opacity-0'" class="block text-md font-medium transition-[max-width,opacity] duration-200 overflow-hidden whitespace-nowrap">Sure?</span>
           </button>
           <button
             @click="closeSettingModal()"
@@ -339,8 +370,8 @@
       
       <!-- Toolbar -->
       <div id="toolbar" class="touch-manipulation bg-white-black rounded-2xl px-4 py-2 flex gap-4">
-        <button @click="addItem(activeListId)" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
-        <button @click="openSettingModal(activeListId)" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg></button>
+        <button @click="addItem(activeListId)" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 flex items-center cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
+        <button @click="openAboutModal()" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></button>
       </div>
       
       <!-- Trash Can -->

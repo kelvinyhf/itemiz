@@ -1,8 +1,9 @@
 // ------------------------------
 // Variables and Helpers
 // ------------------------------
-const DATA_KEY = "Notick_data_v1";
-const ACTIVE_LIST_ID_KEY = "Notick_active_list_id_v1";
+const DATA_KEY = 'Itemiz_data_v1';
+const ACTIVE_LIST_ID_KEY = 'Itemiz_active_list_id_v1';
+const HAS_VISITED_KEY =  'Itemiz_has_visited_v1';
 const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
 
 // Color palette for item colors
@@ -121,6 +122,7 @@ function generateId() {
 const topBar = document.getElementById('top-bar');
 const lists = document.getElementById('lists');
 const modals = document.getElementById('modals');
+const aboutModal = document.getElementById('about-modal');
 const editModal = document.getElementById('edit-modal');
 const settingModal = document.getElementById('setting-modal');
 const bottomBar = document.getElementById('bottom-bar');
@@ -284,7 +286,7 @@ const state = PetiteVue.reactive({
     this.save();
     
     // Open Edit Modal
-    this.pressStartTime = Date.now();
+    this.itemPressStartTime = Date.now();
     this.openEditModal(newItem);
     PetiteVue.nextTick(() => {
       
@@ -347,26 +349,60 @@ const state = PetiteVue.reactive({
       this.closeEditModal();
     } else if (!settingModal.classList.contains('hidden')) {
       this.closeSettingModal();
+    } else if (!aboutModal.classList.contains('hidden')) {
+      this.closeAboutModal();
+    }
+  },
+  
+  // About Modal
+  openAboutModal() {
+    this.showingOverlay = true;
+    aboutModal.classList.remove('slide-out-animation');
+    aboutModal.classList.add('slide-in-animation');
+    showChild(aboutModal, modals);
+    
+    // Slide out bottom bar
+    bottomBar.classList.add('slide-out-animation');
+    bottomBar.classList.remove('slide-in-animation');
+    
+  },
+  closeAboutModal() {
+    this.showingOverlay = false;
+    aboutModal.classList.remove('slide-in-animation');
+    aboutModal.classList.add('slide-out-animation');
+    setTimeout(() => {
+      showChild(null, modals);
+    }, 225);
+    
+    // Slide in bottom bar
+    bottomBar.classList.remove('slide-out-animation');
+    bottomBar.classList.add('slide-in-animation');
+    
+  },
+  checkWhetherVisited() {
+    if (localStorage.getItem(HAS_VISITED_KEY) === null) {
+      localStorage.setItem(HAS_VISITED_KEY, "joined");
+      this.openAboutModal();
     }
   },
   
   // Edit Modal (about items)
-  pressStartTime: null,
-  isDragging: false,
+  itemPressStartTime: null,
+  itemIsDragging: false,
   editingItem: { id: "", title: "", desc: "", color: "none", date: "", completed: false },
   
   // When pointer is down, start counting
   onItemPointerDown(evt) {
-    this.pressStartTime = Date.now();
+    this.itemPressStartTime = Date.now();
   },
   
   openEditModal(item) {
     
     // If dragging, return
-    if (this.isDragging) return;
+    if (this.itemIsDragging) return;
     
     // If holding (>200ms) in mobile, return
-    if (isTouchDevice && (Date.now() - this.pressStartTime > 200)) return;
+    if (isTouchDevice && (Date.now() - this.itemPressStartTime > 200)) return;
     
     // Target the item (via editingItem), show overlay and edit modal
     this.editingItem = { ...item };
@@ -398,7 +434,7 @@ const state = PetiteVue.reactive({
       showChild(null, modals);
     }, 225);
     
-    // Slide out bottom bar
+    // Slide in bottom bar
     bottomBar.classList.remove('slide-out-animation');
     bottomBar.classList.add('slide-in-animation');
     
@@ -471,7 +507,7 @@ const state = PetiteVue.reactive({
       showChild(null, modals);
     }, 225);
     
-    // Slide out bottom bar
+    // Slide in bottom bar
     bottomBar.classList.remove('slide-out-animation');
     bottomBar.classList.add('slide-in-animation');
     
@@ -503,6 +539,7 @@ const state = PetiteVue.reactive({
 // Initialization
 // ------------------------------
 PetiteVue.createApp(state).mount('body');
+state.checkWhetherVisited();
 state.initActiveListStyle();
 state.save();
 
@@ -560,7 +597,7 @@ Sortable.create(lists, { // RWD Change
   
   // If not touch device, show trash can only when starting to drag item
   onStart() {
-    state.isDragging = true;
+    state.itemIsDragging = true;
     if (!isTouchDevice) {
       setTimeout(() => {
         showChild(trashCan, bottomBar);
@@ -586,7 +623,7 @@ Sortable.create(lists, { // RWD Change
     
     // Reset dragging state
     setTimeout(() => {
-      state.isDragging = false;
+      state.itemIsDragging = false;
     }, 0);
     
     // Get the target list
