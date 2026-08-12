@@ -110,10 +110,9 @@
             color: theme.textColor,
           };
         })()"
-        class="tabs h-[75%] text-sm bg-gray-1 shadow-[0_-1px_5px_rgba(0,0,0,0.01)] px-4 py-2 first:ml-4 last:mr-4 rounded-t-lg flex justify-center items-center gap-2 shrink-0 whitespace-nowrap"
+        class="tabs h-[75%] text-sm bg-gray-1 shadow-[0_-1px_5px_rgba(0,0,0,0.01)] px-4 py-2 first:ml-4 last:mr-4 rounded-t-lg flex justify-center items-center shrink-0 whitespace-nowrap"
       >
         <span>{{ list.name || 'New List' }}</span>
-        <button @click.stop="deleteList(list.id)" class="cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--red-9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
       </div>
       
       <!-- Add List Button -->
@@ -248,15 +247,19 @@
           >
         </div>
         
-        <!-- Cancal and Save Button -->
+        <!-- Action Buttons -->
         <div class="flex justify-center items-center gap-4 p-2">
-          <button 
-            @click="closeEditModal(activeListId)"
-            class="w-full p-2 bg-gray-2 text-gray-12 font-medium rounded-xl cursor-pointer hover:bg-gray-4 hover:text-gray-11 active:bg-gray-4 active:text-gray-11"
+          <button
+            @click="closeEditModal(); deleteItemById(activeListId, editingItem.id)"
+            class="shrink-0 p-2 bg-red-2 text-red-11 border border-red-3 font-medium rounded-xl cursor-pointer hover:bg-red-4 hover:text-red-9 active:bg-red-4 active:text-red-9"
+          ><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+          <button
+            @click="closeEditModal()"
+            class="flex-1 p-2 bg-gray-1 text-gray-12 border border-gray-3 font-medium rounded-xl cursor-pointer hover:bg-gray-4 hover:text-gray-11 active:bg-gray-4 active:text-gray-11"
           >Cancel</button>
-          <button 
+          <button
             @click="saveEditModal(activeListId)"
-            class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer hover:bg-gray-10 hover:text-gray-2 active:bg-gray-10 active:text-gray-2"
+            class="flex-1 p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer hover:bg-gray-10 hover:text-gray-2 active:bg-gray-10 active:text-gray-2"
           >Save</button>
         </div>
         
@@ -299,15 +302,19 @@
           >
         </div>
         
-        <!-- Cancal and Save Button -->
+        <!-- Action Buttons -->
         <div class="flex justify-center items-center gap-4 p-2">
-          <button 
-            @click="closeSettingModal(activeListId)"
-            class="w-full p-2 bg-gray-1 text-gray-12 font-medium rounded-xl cursor-pointer hover:bg-gray-4 hover:text-gray-11 active:bg-gray-4 active:text-gray-11"
+          <button
+            @click="closeSettingModal(); deleteList(activeListId)"
+            class="shrink-0 p-2 bg-red-2 text-red-11 border border-red-3 font-medium rounded-xl cursor-pointer hover:bg-red-4 hover:text-red-9 active:bg-red-4 active:text-red-9"
+          ><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+          <button
+            @click="closeSettingModal()"
+            class="flex-1 p-2 bg-gray-1 text-gray-12 border border-gray-3 font-medium rounded-xl cursor-pointer hover:bg-gray-4 hover:text-gray-11 active:bg-gray-4 active:text-gray-11"
           >Cancel</button>
-          <button 
+          <button
             @click="saveSettingModal(activeListId)"
-            class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer hover:bg-gray-10 hover:text-gray-2 active:bg-gray-10 active:text-gray-2"
+            class="flex-1 p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer hover:bg-gray-10 hover:text-gray-2 active:bg-gray-10 active:text-gray-2"
           >Save</button>
         </div>
         

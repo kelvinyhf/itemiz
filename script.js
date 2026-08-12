@@ -182,7 +182,8 @@ const state = PetiteVue.reactive({
   },
   initActiveListStyle() {
     const activeStyle = 'font-semibold scale-105';
-    document.getElementById(this.activeListId).classList.add(...activeStyle.split(' '));
+    const activeListEl = document.getElementById(this.activeListId);
+    if (activeListEl) activeListEl.classList.add(...activeStyle.split(' '));
   },
   
   // Get List and Items by Id
@@ -303,6 +304,11 @@ const state = PetiteVue.reactive({
       }, 175);
       
     }
+  },
+  deleteItemById(listId, itemId) {
+    const list = this.getListById(listId);
+    const index = list.items.findIndex(item => item.id === itemId);
+    if (index !== -1) this.deleteItem(listId, index);
   },
   
   // Due Date Functions
