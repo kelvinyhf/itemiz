@@ -118,10 +118,10 @@
       <!-- Add List Button -->
       <button
         @click="addList()"
-        class="sticky top-0 right-0 ml-auto h-full bg-white-black text-sm rounded-l-xl p-4 shadow-[-2px_0_5px_rgba(0,0,0,0.02)] shrink-0 flex items-center gap-2 whitespace-nowrap cursor-pointer"
+        class="group sticky top-0 right-0 ml-auto h-full bg-white-black text-sm rounded-l-xl p-4 shadow-[-2px_0_5px_rgba(0,0,0,0.02)] shrink-0 flex items-center gap-2 transition-shadow whitespace-nowrap cursor-pointer hover:shadow-[-2px_0_0_5px_rgba(0,0,0,0.04)] active:shadow-[-2px_0_0_5px_rgba(0,0,0,0.04)]"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gray-11)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5H3"/><path d="M11 12H3"/><path d="M16 19H3"/><path d="M18 9v6"/><path d="M21 12h-6"/></svg>
-        <span class="text-gray-11 font-medium">Add</span>
+        <span :class="!isTouchDevice ?'max-w-0 opacity-0 overflow-hidden transition-[max-width,opacity] duration-250 group-hover:opacity-100 group-hover:max-w-xs' : 'max-w-xs opacity-100'" class="text-gray-11 font-medium">Add</span>
       </button>
       
     </section>
@@ -250,7 +250,7 @@
         <!-- Action Buttons -->
         <div class="flex justify-center items-center gap-4 p-2">
           <button
-            @click="closeEditModal(); deleteItemById(activeListId, editingItem.id)"
+            @click="deleteItemById(activeListId, editingItem.id); closeEditModal();"
             class="shrink-0 p-2 bg-red-2 text-red-11 border border-red-3 font-medium rounded-xl cursor-pointer hover:bg-red-4 hover:text-red-9 active:bg-red-4 active:text-red-9"
           ><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
           <button
@@ -305,7 +305,7 @@
         <!-- Action Buttons -->
         <div class="flex justify-center items-center gap-4 p-2">
           <button
-            @click="closeSettingModal(); deleteList(activeListId)"
+            @click="deleteList(activeListId); closeSettingModal();"
             class="shrink-0 p-2 bg-red-2 text-red-11 border border-red-3 font-medium rounded-xl cursor-pointer hover:bg-red-4 hover:text-red-9 active:bg-red-4 active:text-red-9"
           ><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
           <button
