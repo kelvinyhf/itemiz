@@ -305,9 +305,21 @@
         <!-- Action Buttons -->
         <div class="flex justify-center items-center gap-4 p-2">
           <button
-            @click="deleteList(activeListId); closeSettingModal();"
-            class="shrink-0 p-2 bg-red-2 text-red-11 border border-red-3 font-medium rounded-xl cursor-pointer hover:bg-red-4 hover:text-red-9 active:bg-red-4 active:text-red-9"
-          ><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+            @click="
+              if (!confirmDelete) {
+                confirmDelete = true;
+                setTimeout(() => confirmDelete = false, 3000);
+              } else {
+                deleteList(activeListId);
+                closeSettingModal();
+                confirmDelete = false;
+              }
+            "
+            class="shrink-0 p-2 bg-red-2 text-red-11 border border-red-3 font-medium rounded-xl flex items-center cursor-pointer hover:bg-red-4 hover:text-red-9 active:bg-red-4 active:text-red-9"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            <span :class="confirmDelete ? 'max-w-md opacity-100 ml-2' : 'max-w-0 opacity-0'" class="block text-md font-medium transition-[max-width,opacity] duration-200 overflow-hidden whitespace-nowrap">Sure?</span>
+          </button>
           <button
             @click="closeSettingModal()"
             class="flex-1 p-2 bg-gray-1 text-gray-12 border border-gray-3 font-medium rounded-xl cursor-pointer hover:bg-gray-4 hover:text-gray-11 active:bg-gray-4 active:text-gray-11"

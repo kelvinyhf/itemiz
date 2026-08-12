@@ -275,6 +275,7 @@ const state = PetiteVue.reactive({
     }, 175);
     
   },
+  confirmDelete: false,
   
   // Add and Delete Item
   addItem(listId) {
