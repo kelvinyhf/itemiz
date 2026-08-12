@@ -165,19 +165,36 @@ const state = PetiteVue.reactive({
     if (this.activeListId === id) return true;
   },
   setActiveList(id) {
-    
     if (this.checkActiveList(id)) return;
-    
-    // Remove old list's active style (if available) and add to new one
-    if (id !== "") {
-      const activeStyle = 'font-semibold scale-105';
-      if (this.activeListId !== "") document.getElementById(this.activeListId).classList.remove(...activeStyle.split(' '));
+
+    const activeStyle = 'font-semibold scale-105';
+
+    // Remove old list's active style (if available)
+    if (this.activeListId !== "" && document.getElementById(this.activeListId)) {
+      document.getElementById(this.activeListId).classList.remove(...activeStyle.split(' '));
+    }
+
+    // Add new list's active style (if available)
+    if (id !== "" && document.getElementById(id)) {
       document.getElementById(id).classList.add(...activeStyle.split(' '));
     }
     
     // Set new active list
     this.activeListId = id;
     localStorage.setItem(ACTIVE_LIST_ID_KEY, id);
+      
+    // Hide toolbar when no active list, show when a list is selected
+    if (id === "") {
+      toolbar.classList.remove('slide-in-animation-fast');
+      toolbar.classList.add('slide-out-animation-fast');
+      setTimeout(() => {
+        showChild(null, bottomBar);
+      }, 150);
+    } else {
+      toolbar.classList.remove('slide-out-animation-fast');
+      toolbar.classList.add('slide-in-animation-fast');
+      showChild(toolbar, bottomBar);
+    }
     
   },
   initActiveListStyle() {
@@ -488,6 +505,19 @@ PetiteVue.createApp(state).mount('body');
 state.initActiveListStyle();
 state.save();
 
+// Initialize toolbar visibility: hide toolbar if no list is selected on load
+if (!state.activeListId) {
+  // Hide children of bottomBar (toolbar/trash) so toolbar is invisible
+  showChild(null, bottomBar);
+  if (toolbar) {
+    // Ensure it's in the 'hidden' state; add a quick slide-out class for consistency
+    toolbar.classList.add('slide-out-animation-fast');
+  }
+} else {
+  // Ensure toolbar is shown when there is an active list
+  showChild(toolbar, bottomBar);
+}
+
 // ------------------------------
 // SortableJS - Items
 // ------------------------------
@@ -539,10 +569,10 @@ Sortable.create(lists, { // RWD Change
     };
   },
   
-  // If no overlay is showing, show toolbar when unchoosing item
+  // If no overlay is showing, show toolbar when unchoosing item (only if a list is selected)
   onUnchoose() {
     setTimeout(() => {
-      if (!state.showingOverlay) {
+      if (!state.showingOverlay && state.activeListId) {
         showChild(toolbar, bottomBar);
         toolbar.classList.remove('slide-out-animation-fast');
         toolbar.classList.add('slide-in-animation-fast');
