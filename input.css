@@ -350,21 +350,21 @@
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.fade-in-animation {
-  animation: fadeIn 0.2s ease-out;
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-.fade-out-animation {
-  animation: fadeOut 0.2s ease-out;
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes slideIn {
@@ -372,19 +372,21 @@
     transform: translateY(100%);
     opacity: 0;
   }
-  
   to {
     transform: translateY(0);
     opacity: 1;
   }
 }
 
-.slide-in-animation  {
-  animation: slideIn 0.25s ease-out;
-}
-
-.slide-in-animation-fast {
-  animation: slideIn 0.15s ease-out;
+@keyframes slideInQuick {
+  from {
+    transform: translateY(50%);
+    opacity: 0.5;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes slideOut {
@@ -392,19 +394,48 @@
     transform: translateY(0);
     opacity: 1;
   }
-  
   to {
     transform: translateY(100%);
     opacity: 0;
   }
 }
 
-.slide-out-animation {
-  animation: slideOut 0.25s linear;
+@keyframes slideOutQuick {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(50%);
+    opacity: 0.5;
+  }
 }
 
-.slide-out-animation-fast {
-  animation: slideOut 0.15s linear;
+@media (prefers-reduced-motion: reduce) {
+  .fade-in-animation,
+  .fade-out-animation,
+  .slide-in-animation,
+  .slide-in-animation-fast,
+  .slide-out-animation,
+  .slide-out-animation-fast {
+    animation: none !important;
+  }
+}
+
+/* Mobile Animations */
+@media (max-width: 768px) {
+  .fade-in-animation { animation: fadeIn 0.2s ease-out; }
+  .fade-out-animation { animation: fadeOut 0.2s ease-out; }
+  .slide-in-animation  { animation: slideIn 0.25s ease-out; }
+  .slide-in-animation-fast { animation: slideIn 0.15s ease-out; }
+  .slide-out-animation { animation: slideOut 0.25s linear; }
+  .slide-out-animation-fast { animation: slideOut 0.15s linear; }
+}
+
+/* Desktop Animations */
+@media (min-width: 768px) {
+  .slide-in-animation  { animation: slideInQuick 0.1s ease-out; }
+  .slide-out-animation { animation: slideOutQuick 0.1s linear; }
 }
 
 /* SortableJS */

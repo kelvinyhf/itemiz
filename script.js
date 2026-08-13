@@ -132,13 +132,32 @@ const trashCan = document.getElementById('trash-can');
 // ------------------------------
 // DOM Helpers
 // ------------------------------
-function showChild(target, container) {
+function showChild(target, container, options = {}) {
+  const { inAnim = '', outAnim = '', duration = 0 } = options;
   Array.from(container.children).forEach(child => {
-    child.classList.add('hidden');
+    if (child === target) {
+
+      // If the target is hidden, show it with optional animation
+      if (outAnim) child.classList.remove(outAnim);
+      child.classList.remove('hidden');
+      if (inAnim) child.classList.add(inAnim);
+
+    } else if (!child.classList.contains('hidden')) {
+      
+      // If the child is visible, hide it with optional animation
+      if (outAnim) {
+        if (inAnim) child.classList.remove(inAnim);
+        child.classList.add(outAnim);
+        setTimeout(() => {
+          child.classList.add('hidden');
+          child.classList.remove(outAnim);
+        }, duration);
+      } else {
+        child.classList.add('hidden'); // Hide immediately if no animation
+      }
+
+    }
   });
-  if (target) {
-    target.classList.remove('hidden');
-  }
 }
 
 // ------------------------------
@@ -187,15 +206,9 @@ const state = PetiteVue.reactive({
       
     // Hide toolbar when no active list, show when a list is selected
     if (id === "") {
-      toolbar.classList.remove('slide-in-animation-fast');
-      toolbar.classList.add('slide-out-animation-fast');
-      setTimeout(() => {
-        showChild(null, bottomBar);
-      }, 150);
+      showChild(null, bottomBar, { outAnim: 'slide-out-animation-fast', duration: 150 });
     } else {
-      toolbar.classList.remove('slide-out-animation-fast');
-      toolbar.classList.add('slide-in-animation-fast');
-      showChild(toolbar, bottomBar);
+      showChild(toolbar, bottomBar, { inAnim: 'slide-in-animation-fast' });
     }
     
   },
@@ -357,26 +370,21 @@ const state = PetiteVue.reactive({
   // About Modal
   openAboutModal() {
     this.showingOverlay = true;
-    aboutModal.classList.remove('slide-out-animation');
-    aboutModal.classList.add('slide-in-animation');
-    showChild(aboutModal, modals);
+    showChild(aboutModal, modals, { inAnim: 'slide-in-animation' });
     
     // Slide out bottom bar
     bottomBar.classList.add('slide-out-animation');
     bottomBar.classList.remove('slide-in-animation');
-    
+
   },
   closeAboutModal() {
-    this.showingOverlay = false;
-    aboutModal.classList.remove('slide-in-animation');
-    aboutModal.classList.add('slide-out-animation');
-    setTimeout(() => {
-      showChild(null, modals);
-    }, 225);
-    
-    // Slide in bottom bar
+    showChild(null, modals, { outAnim: 'slide-out-animation', duration: 225 });
     bottomBar.classList.remove('slide-out-animation');
     bottomBar.classList.add('slide-in-animation');
+    
+    setTimeout(() => {
+      this.showingOverlay = false;
+    }, 225);
     
   },
   checkWhetherVisited() {
@@ -407,9 +415,7 @@ const state = PetiteVue.reactive({
     // Target the item (via editingItem), show overlay and edit modal
     this.editingItem = { ...item };
     this.showingOverlay = true;
-    editModal.classList.remove('slide-out-animation');
-    editModal.classList.add('slide-in-animation');
-    showChild(editModal, modals);
+    showChild(editModal, modals, { inAnim: 'slide-in-animation' });
     
     // Slide out bottom bar
     bottomBar.classList.add('slide-out-animation');
@@ -423,21 +429,17 @@ const state = PetiteVue.reactive({
     
   },
   
-  // Reset editingItem, hide overlay and edit modal
+  // Reset editingItem and hide overlay after animations
   closeEditModal() {
-    this.editingItem = { id: "", title: "", desc: "", color: "none", date: "", completed: false };
-    this.showingOverlay = false;
-    
-    editModal.classList.remove('slide-in-animation');
-    editModal.classList.add('slide-out-animation');
-    setTimeout(() => {
-      showChild(null, modals);
-    }, 225);
-    
-    // Slide in bottom bar
+    showChild(null, modals, { outAnim: 'slide-out-animation', duration: 225 });
     bottomBar.classList.remove('slide-out-animation');
     bottomBar.classList.add('slide-in-animation');
     
+    setTimeout(() => {
+      this.editingItem = { id: "", title: "", desc: "", color: "none", date: "", completed: false };
+      this.showingOverlay = false;
+    }, 225);
+
   },
   
   saveEditModal(listId) {
@@ -480,9 +482,7 @@ const state = PetiteVue.reactive({
     // Target the list (via editingList), show overlay and setting modal
     this.editingList = { ...this.getListById(listId) };
     this.showingOverlay = true;
-    settingModal.classList.remove('slide-out-animation');
-    settingModal.classList.add('slide-in-animation');
-    showChild(settingModal, modals);
+    showChild(settingModal, modals, { inAnim: 'slide-in-animation' });
     
     // Slide out bottom bar
     bottomBar.classList.add('slide-out-animation');
@@ -495,22 +495,18 @@ const state = PetiteVue.reactive({
     });
     
   },
-  
-  // Reset editingList, hide overlay and setting modal
+
+  // Reset editingList and hide overlay after animations
   closeSettingModal() {
-    this.editingList = { id: "", name: "", color: "none", items: [] };
-    this.showingOverlay = false;
-    
-    settingModal.classList.remove('slide-in-animation');
-    settingModal.classList.add('slide-out-animation');
-    setTimeout(() => {
-      showChild(null, modals);
-    }, 225);
-    
-    // Slide in bottom bar
+    showChild(null, modals, { outAnim: 'slide-out-animation', duration: 225 });
     bottomBar.classList.remove('slide-out-animation');
     bottomBar.classList.add('slide-in-animation');
     
+    setTimeout(() => {
+      this.editingList = { id: "", name: "", color: "none", items: [] };
+      this.showingOverlay = false;
+    }, 225);
+
   },
   
   saveSettingModal(listId) {
@@ -543,16 +539,10 @@ state.checkWhetherVisited();
 state.initActiveListStyle();
 state.save();
 
-// Initialize toolbar visibility: hide toolbar if no list is selected on load
+// Initialize toolbar visibility
 if (!state.activeListId) {
-  // Hide children of bottomBar (toolbar/trash) so toolbar is invisible
   showChild(null, bottomBar);
-  if (toolbar) {
-    // Ensure it's in the 'hidden' state; add a quick slide-out class for consistency
-    toolbar.classList.add('slide-out-animation-fast');
-  }
 } else {
-  // Ensure toolbar is shown when there is an active list
   showChild(toolbar, bottomBar);
 }
 
@@ -588,9 +578,7 @@ Sortable.create(lists, { // RWD Change
     if ('vibrate' in navigator) navigator.vibrate(30);
     if (isTouchDevice) {
       setTimeout(() => {
-        showChild(trashCan, bottomBar);
-        trashCan.classList.remove('slide-out-animation-fast');
-        trashCan.classList.add('slide-in-animation-fast');
+        showChild(trashCan, bottomBar, { inAnim: 'slide-in-animation-fast' });
       }, 150);
     };
   },
@@ -600,9 +588,7 @@ Sortable.create(lists, { // RWD Change
     state.itemIsDragging = true;
     if (!isTouchDevice) {
       setTimeout(() => {
-        showChild(trashCan, bottomBar);
-        trashCan.classList.remove('slide-out-animation-fast');
-        trashCan.classList.add('slide-in-animation-fast');
+        showChild(trashCan, bottomBar, { inAnim: 'slide-in-animation-fast' });
       }, 150);
     };
   },
@@ -611,9 +597,7 @@ Sortable.create(lists, { // RWD Change
   onUnchoose() {
     setTimeout(() => {
       if (!state.showingOverlay && state.activeListId) {
-        showChild(toolbar, bottomBar);
-        toolbar.classList.remove('slide-out-animation-fast');
-        toolbar.classList.add('slide-in-animation-fast');
+        showChild(toolbar, bottomBar, { inAnim: 'slide-in-animation-fast' });
       }
     }, 150);
   },
