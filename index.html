@@ -216,7 +216,7 @@
           if (dist > 30 && time < 250) closeAboutModal();
         "
         :class="{ 'pt-4': !isTouchDevice }"
-        class="pointer-events-auto w-full max-w-lg bg-white-black p-6 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
+        class="pointer-events-auto w-full max-w-lg bg-white-black p-6 pt-3 pb-[env(safe-area-inset-bottom)] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
       >
         <div v-if="isTouchDevice" class="w-10 h-1 bg-gray-a4 mx-auto rounded-full"></div>
         
@@ -241,7 +241,7 @@
           if (dist > 30 && time < 250) closeItemModal(activeListId);
         "
         :class="{ 'pt-4': !isTouchDevice }"
-        class="pointer-events-auto w-full max-w-lg bg-white-black p-4 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
+        class="pointer-events-auto w-full max-w-lg bg-white-black p-4 pt-3 pb-[env(safe-area-inset-bottom)] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
       >
         <div v-if="isTouchDevice" class="w-10 h-1 bg-gray-a4 mx-auto rounded-full"></div>
         
@@ -314,7 +314,7 @@
           if (dist > 30 && time < 250) closeListModal(activeListId);
         "
         :class="{ 'pt-4': !isTouchDevice }"
-        class="pointer-events-auto w-full max-w-lg bg-white-black p-4 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
+        class="pointer-events-auto w-full max-w-lg bg-white-black p-4 pt-3 pb-[env(safe-area-inset-bottom)] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
       >
         <div v-if="isTouchDevice" class="w-10 h-1 bg-gray-a4 mx-auto rounded-full"></div>
         
@@ -375,16 +375,16 @@
     </section>
     
     <!-- Bottom Bar -->
-    <section id="bottom-bar" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full min-h-[125px] z-97 pb-[env(safe-area-inset-bottom)] flex justify-center items-center bg-gradient-to-b from-transparent to-gray-a3 pointer-events-none">
+    <section id="bottom-bar" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full min-h-[125px] z-97 flex justify-center items-center bg-gradient-to-b from-transparent to-gray-a3 pointer-events-none">
       
       <!-- Toolbar -->
-      <div id="toolbar" class="pointer-events-auto touch-manipulation bg-white-black rounded-2xl px-4 py-2 flex gap-4">
+      <div id="toolbar" class="pointer-events-auto touch-manipulation bg-white-black rounded-2xl px-4 py-2 mb-[env(safe-area-inset-bottom)] flex gap-4">
         <button @click="addItem(activeListId)" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 flex items-center cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
         <button @click="openAboutModal()" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></button>
       </div>
       
       <!-- Trash Can -->
-      <div id="trash-can" class="pointer-events-auto absolute top-0 left-0 w-[calc(100%-3rem)] h-[calc(100%-3rem)] m-6 bg-red-2 border-2 border-dashed border-red-4 rounded-xl opacity-85 hidden flex justify-center items-center">
+      <div id="trash-can" class="pointer-events-auto absolute top-0 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-xl h-[calc(100%-3rem)] my-6 mb-[env(safe-area-inset-bottom)] bg-red-2 border-2 border-dashed border-red-4 rounded-xl opacity-85 hidden flex justify-center items-center">
         <span class="text-red-9 text-sm">Drop here to delete</span>
       </div>
       
