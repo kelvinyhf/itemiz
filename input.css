@@ -461,3 +461,16 @@
   box-shadow: none;
   opacity: 0.15;
 }
+
+/* PWA Support */
+body {
+  width: 100dvw;
+  height: 100dvh;
+}
+
+@media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui) {
+  body {
+    width: 100lvw !important;
+    height: 100lvh !important;
+  }
+}
