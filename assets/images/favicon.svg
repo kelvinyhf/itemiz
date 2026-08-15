@@ -1,25 +1,29 @@
 <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    
+    .color-start { stop-color: #1C2024; }
+    .color-end { stop-color: #60646C; }
+    
+    @media (prefers-color-scheme: dark) {
+      .color-start { stop-color: #EDEEF0; }
+      .color-end { stop-color: #B0B4BA; }
+    }
+    
+  </style>
+  <mask id="mask" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="120" height="120">
+    <path d="M65 25H105" stroke="#1C2024" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M65 60H105" stroke="#1C2024" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M65 95H105" stroke="#1C2024" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M15 85L25 95L45 75" stroke="#1C2024" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M40 20H20C17.2386 20 15 22.2386 15 25V45C15 47.7614 17.2386 50 20 50H40C42.7614 50 45 47.7614 45 45V25C45 22.2386 42.7614 20 40 20Z" stroke="#1C2024" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  </mask>
+  <g mask="url(#mask)">
+    <rect width="120" height="120" fill="url(#gradient)"/>
+  </g>
   <defs>
-    <linearGradient id="gradient-light" x1="60" y1="0" x2="60" y2="120" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#1C2024"/>
-      <stop offset="1" stop-color="#60646C"/>
-    </linearGradient>
-    <linearGradient id="gradient-dark" x1="60" y1="0" x2="60" y2="120" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#EDEEF0"/>
-      <stop offset="1" stop-color="#B0B4BA"/>
+    <linearGradient id="gradient" x1="60" y1="0" x2="60" y2="120" gradientUnits="userSpaceOnUse">
+      <stop class="color-start" offset="0"/>
+      <stop class="color-end" offset="1"/>
     </linearGradient>
   </defs>
-  <style>
-    .icon-path { stroke: url(#gradient-light); }
-    @media (prefers-color-scheme: dark) {
-      .icon-path { stroke: url(#gradient-dark); }
-    }
-  </style>
-  <g class="icon-path" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M65 25H105"/>
-    <path d="M65 60H105"/>
-    <path d="M65 95H105"/>
-    <path d="M15 85L25 95L45 75"/>
-    <path d="M40 20H20C17.2386 20 15 22.2386 15 25V45C15 47.7614 17.2386 50 20 50H40C42.7614 50 45 47.7614 45 45V25C45 22.2386 42.7614 20 40 20Z"/>
-  </g>
 </svg>

@@ -113,8 +113,8 @@ const topBar = document.getElementById('top-bar');
 const itemsContainer = document.getElementById('items-container');
 const modals = document.getElementById('modals');
 const aboutModal = document.getElementById('about-modal');
-const editModal = document.getElementById('edit-modal');
-const settingModal = document.getElementById('setting-modal');
+const itemModal = document.getElementById('item-modal');
+const listModal = document.getElementById('list-modal');
 const bottomBar = document.getElementById('bottom-bar');
 const toolbar = document.getElementById('toolbar');
 const trashCan = document.getElementById('trash-can');
@@ -245,13 +245,13 @@ const state = PetiteVue.reactive({
     this.data.push(newList);
     this.save();
     
-    // Open Edit Modal
+    // Open Item Modal
     this.listPressStartTime = Date.now();
     PetiteVue.nextTick(() => {
       
-      // Set new active list and open setting modal
+      // Set new active list and open list modal
       this.setActiveList(newList.id);
-      this.openSettingModal(newList.id);
+      this.openListModal(newList.id);
       
       // Fade in animation
       const newListEl = document.getElementById(newList.id);
@@ -305,9 +305,9 @@ const state = PetiteVue.reactive({
     this.getItemsById(listId).push(newItem);
     this.save();
     
-    // Open Edit Modal
+    // Open Item Modal
     this.itemPressStartTime = Date.now();
-    this.openEditModal(newItem);
+    this.openItemModal(newItem);
     PetiteVue.nextTick(() => {
       
       // Fade in animation
@@ -365,10 +365,10 @@ const state = PetiteVue.reactive({
   // Overlay
   showingOverlay: false,
   onOverlayClick() {
-    if (!editModal.classList.contains('hidden')) {
-      this.closeEditModal();
-    } else if (!settingModal.classList.contains('hidden')) {
-      this.closeSettingModal();
+    if (!itemModal.classList.contains('hidden')) {
+      this.closeItemModal();
+    } else if (!listModal.classList.contains('hidden')) {
+      this.closeListModal();
     } else if (!aboutModal.classList.contains('hidden')) {
       this.closeAboutModal();
     }
@@ -396,7 +396,7 @@ const state = PetiteVue.reactive({
     }
   },
   
-  // Edit Modal (about items)
+  // Item Modal
   itemPressStartTime: null,
   itemIsDragging: false,
   editingItem: { id: "", title: "", desc: "", color: "none", date: "", completed: false },
@@ -406,7 +406,7 @@ const state = PetiteVue.reactive({
     this.itemPressStartTime = Date.now();
   },
   
-  openEditModal(item) {
+  openItemModal(item) {
     
     // If dragging, return
     if (this.itemIsDragging) return;
@@ -414,22 +414,22 @@ const state = PetiteVue.reactive({
     // If holding (>200ms) in mobile, return
     if (isTouchDevice && (Date.now() - this.itemPressStartTime > 200)) return;
     
-    // Target the item (via editingItem), show overlay and edit modal
+    // Target the item (via editingItem), show overlay and item modal
     this.editingItem = { ...item };
     this.showingOverlay = true;
-    showChild(editModal, modals, { inAnim: 'slide-in-animation' });
+    showChild(itemModal, modals, { inAnim: 'slide-in-animation' });
     slideBottomBar('out');
     
     // Autofocus
     PetiteVue.nextTick(() => {
-      const titleInput = document.getElementById('edit-modal-title-input');
+      const titleInput = document.getElementById('item-modal-title-input');
       if (!isTouchDevice) titleInput.focus();
     });
     
   },
   
   // Reset editingItem and hide overlay after animations
-  closeEditModal() {
+  closeItemModal() {
     showChild(null, modals, { outAnim: 'slide-out-animation', duration: getOutDuration() });
     slideBottomBar('in');
     
@@ -440,7 +440,7 @@ const state = PetiteVue.reactive({
 
   },
   
-  saveEditModal(listId) {
+  saveItemModal(listId) {
     
     // Find the actual item (via id) and save it
     const targetItems = this.getItemsById(listId);
@@ -455,11 +455,11 @@ const state = PetiteVue.reactive({
       this.save();
     }
     
-    // Close edit modal
-    this.closeEditModal();
+    // Close item modal
+    this.closeItemModal();
   },
   
-  // Setting Modal (about lists)
+  // List Modal
   listPressStartTime: null,
   listIsDragging: false,
   editingList: { id: "", name: "", color: "none", items: [] },
@@ -469,7 +469,7 @@ const state = PetiteVue.reactive({
     this.listPressStartTime = Date.now();
   },
   
-  openSettingModal(listId) {
+  openListModal(listId) {
     
     // If dragging, return
     if (this.listIsDragging) return;
@@ -477,22 +477,22 @@ const state = PetiteVue.reactive({
     // If holding (>200ms) in mobile, return
     if (isTouchDevice && (Date.now() - this.listPressStartTime > 200)) return;
     
-    // Target the list (via editingList), show overlay and setting modal
+    // Target the list (via editingList), show overlay and list modal
     this.editingList = { ...this.getListById(listId) };
     this.showingOverlay = true;
-    showChild(settingModal, modals, { inAnim: 'slide-in-animation' });
+    showChild(listModal, modals, { inAnim: 'slide-in-animation' });
     slideBottomBar('out');
     
     // Autofocus
     PetiteVue.nextTick(() => {
-      const nameInput = document.getElementById('setting-modal-name-input');
+      const nameInput = document.getElementById('list-modal-name-input');
       if (!isTouchDevice) nameInput.focus();
     });
     
   },
 
   // Reset editingList and hide overlay after animations
-  closeSettingModal() {
+  closeListModal() {
     showChild(null, modals, { outAnim: 'slide-out-animation', duration: getOutDuration() });
     slideBottomBar('in');
     
@@ -503,7 +503,7 @@ const state = PetiteVue.reactive({
 
   },
   
-  saveSettingModal(listId) {
+  saveListModal(listId) {
     
     // Find the actual list (via id) and save it
     const targetList = this.getListById(listId);
@@ -515,8 +515,8 @@ const state = PetiteVue.reactive({
     });
     this.save();
     
-    // Close setting modal
-    this.closeSettingModal();
+    // Close list modal
+    this.closeListModal();
   },
   
   // Swipe down var for modals
