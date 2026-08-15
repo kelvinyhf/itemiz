@@ -4,7 +4,11 @@
 const DATA_KEY = 'Itemiz_data_v1';
 const ACTIVE_LIST_ID_KEY = 'Itemiz_active_list_id_v1';
 const HAS_VISITED_KEY =  'Itemiz_has_visited_v1';
+
 const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+const isMobile = () => window.matchMedia('(width < 768px)').matches;
+const getOutDuration = () => (isMobile() ? 225 : 75);
+const getFastOutDurarion = () => (isMobile() ? 125 : 50);
 
 // Color palette for item colors
 const PALETTE = {
@@ -81,33 +85,19 @@ const DEFAULT_DATA = [
   },
   {
     id: generateId(),
-    title: "That's it!",
-    desc: "Hope you like it",
+    title: "Drag to sort",
+    desc: "",
     color: "none",
     date: "",
-    completed: true
-  }]
-},
-{
-  id: generateId(),
-  name: "Today's Work",
-  color: "none",
-  items: [
-  {
-    id: generateId(),
-    title: "Start a New Project",
-    desc: "Can be anything",
-    color: "green",
-    date: "",
-    completed: true
+    completed: false
   },
   {
     id: generateId(),
-    title: "Make at least 3 commits",
-    desc: "No executes",
-    color: "red",
-    date: new Date().toISOString().split('T')[0],
-    completed: false
+    title: "That's it!",
+    desc: "Hope you like :)",
+    color: "none",
+    date: "",
+    completed: true
   }]
 }]
 
@@ -120,7 +110,7 @@ function generateId() {
 // DOM Elements
 // ------------------------------
 const topBar = document.getElementById('top-bar');
-const lists = document.getElementById('lists');
+const itemsContainer = document.getElementById('items-container');
 const modals = document.getElementById('modals');
 const aboutModal = document.getElementById('about-modal');
 const editModal = document.getElementById('edit-modal');
@@ -134,19 +124,25 @@ const trashCan = document.getElementById('trash-can');
 // ------------------------------
 function showChild(target, container, options = {}) {
   const { inAnim = '', outAnim = '', duration = 0 } = options;
+  const allAnim = [
+    'fade-in-animation',
+    'fade-out-animation',
+    'slide-in-animation',
+    'slide-in-animation-fast',
+    'slide-out-animation',
+    'slide-out-animation-fast'
+  ];
   Array.from(container.children).forEach(child => {
+    child.classList.remove(...allAnim);
     if (child === target) {
-
-      // If the target is hidden, show it with optional animation
-      if (outAnim) child.classList.remove(outAnim);
+      
       child.classList.remove('hidden');
       if (inAnim) child.classList.add(inAnim);
-
+      
     } else if (!child.classList.contains('hidden')) {
       
       // If the child is visible, hide it with optional animation
       if (outAnim) {
-        if (inAnim) child.classList.remove(inAnim);
         child.classList.add(outAnim);
         setTimeout(() => {
           child.classList.add('hidden');
@@ -155,9 +151,20 @@ function showChild(target, container, options = {}) {
       } else {
         child.classList.add('hidden'); // Hide immediately if no animation
       }
-
+      
     }
   });
+}
+
+function slideBottomBar(dir) {
+  if (!isMobile()) return;
+  if (dir === 'in') {
+    bottomBar.classList.remove('slide-out-animation');
+    bottomBar.classList.add('slide-in-animation');
+  } else if (dir === 'out') {
+    bottomBar.classList.add('slide-out-animation');
+    bottomBar.classList.remove('slide-in-animation');
+  }
 }
 
 // ------------------------------
@@ -206,7 +213,7 @@ const state = PetiteVue.reactive({
       
     // Hide toolbar when no active list, show when a list is selected
     if (id === "") {
-      showChild(null, bottomBar, { outAnim: 'slide-out-animation-fast', duration: 150 });
+      showChild(null, bottomBar, { outAnim: 'slide-out-animation-fast', duration: getFastOutDurarion() });
     } else {
       showChild(toolbar, bottomBar, { inAnim: 'slide-in-animation-fast' });
     }
@@ -311,8 +318,8 @@ const state = PetiteVue.reactive({
       }, 250);
       
       // Auto scroll
-      lists.scrollTo({
-        top: lists.scrollHeight,
+      itemsContainer.scrollTo({
+        top: itemsContainer.scrollHeight,
         behavior: 'smooth'
       });
       
@@ -371,20 +378,15 @@ const state = PetiteVue.reactive({
   openAboutModal() {
     this.showingOverlay = true;
     showChild(aboutModal, modals, { inAnim: 'slide-in-animation' });
-    
-    // Slide out bottom bar
-    bottomBar.classList.add('slide-out-animation');
-    bottomBar.classList.remove('slide-in-animation');
-
+    slideBottomBar('out');
   },
   closeAboutModal() {
-    showChild(null, modals, { outAnim: 'slide-out-animation', duration: 225 });
-    bottomBar.classList.remove('slide-out-animation');
-    bottomBar.classList.add('slide-in-animation');
+    showChild(null, modals, { outAnim: 'slide-out-animation', duration: getOutDuration() });
+    slideBottomBar('in');
     
     setTimeout(() => {
       this.showingOverlay = false;
-    }, 225);
+    }, getOutDuration());
     
   },
   checkWhetherVisited() {
@@ -416,10 +418,7 @@ const state = PetiteVue.reactive({
     this.editingItem = { ...item };
     this.showingOverlay = true;
     showChild(editModal, modals, { inAnim: 'slide-in-animation' });
-    
-    // Slide out bottom bar
-    bottomBar.classList.add('slide-out-animation');
-    bottomBar.classList.remove('slide-in-animation');
+    slideBottomBar('out');
     
     // Autofocus
     PetiteVue.nextTick(() => {
@@ -431,14 +430,13 @@ const state = PetiteVue.reactive({
   
   // Reset editingItem and hide overlay after animations
   closeEditModal() {
-    showChild(null, modals, { outAnim: 'slide-out-animation', duration: 225 });
-    bottomBar.classList.remove('slide-out-animation');
-    bottomBar.classList.add('slide-in-animation');
+    showChild(null, modals, { outAnim: 'slide-out-animation', duration: getOutDuration() });
+    slideBottomBar('in');
     
     setTimeout(() => {
       this.editingItem = { id: "", title: "", desc: "", color: "none", date: "", completed: false };
       this.showingOverlay = false;
-    }, 225);
+    }, getOutDuration());
 
   },
   
@@ -483,10 +481,7 @@ const state = PetiteVue.reactive({
     this.editingList = { ...this.getListById(listId) };
     this.showingOverlay = true;
     showChild(settingModal, modals, { inAnim: 'slide-in-animation' });
-    
-    // Slide out bottom bar
-    bottomBar.classList.add('slide-out-animation');
-    bottomBar.classList.remove('slide-in-animation');
+    slideBottomBar('out');
     
     // Autofocus
     PetiteVue.nextTick(() => {
@@ -498,14 +493,13 @@ const state = PetiteVue.reactive({
 
   // Reset editingList and hide overlay after animations
   closeSettingModal() {
-    showChild(null, modals, { outAnim: 'slide-out-animation', duration: 225 });
-    bottomBar.classList.remove('slide-out-animation');
-    bottomBar.classList.add('slide-in-animation');
+    showChild(null, modals, { outAnim: 'slide-out-animation', duration: getOutDuration() });
+    slideBottomBar('in');
     
     setTimeout(() => {
       this.editingList = { id: "", name: "", color: "none", items: [] };
       this.showingOverlay = false;
-    }, 225);
+    }, getOutDuration());
 
   },
   
@@ -543,14 +537,13 @@ state.save();
 if (!state.activeListId) {
   showChild(null, bottomBar);
 } else {
-  showChild(toolbar, bottomBar);
+  showChild(toolbar, bottomBar, { inAnim: 'slide-in-animation-fast' });
 }
 
 // ------------------------------
 // SortableJS - Items
 // ------------------------------
-// lists.forEach(list => {
-Sortable.create(lists, { // RWD Change
+Sortable.create(itemsContainer, {
   
   // Basic Settings
   animation: 250,
@@ -611,7 +604,7 @@ Sortable.create(lists, { // RWD Change
     }, 0);
     
     // Get the target list
-    const listId = lists.dataset.listId;
+    const listId = state.activeListId;
     const targetList = state.getListById(listId);
     
     // Get the touch/cursor position
@@ -651,7 +644,6 @@ Sortable.create(lists, { // RWD Change
   }
   
 });
-// });
 
 // ------------------------------
 // SortableJS - Lists
