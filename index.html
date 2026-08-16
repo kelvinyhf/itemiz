@@ -216,7 +216,7 @@
           if (dist > 30 && time < 250) closeAboutModal();
         "
         :class="{ 'pt-4': !isTouchDevice }"
-        class="pointer-events-auto w-full max-w-lg bg-white-black p-6 pt-3 pb-[env(safe-area-inset-bottom)] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
+        class="pointer-events-auto w-full max-w-lg bg-white-black p-6 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
       >
         <div v-if="isTouchDevice" class="w-10 h-1 bg-gray-a4 mx-auto rounded-full"></div>
         
@@ -241,7 +241,7 @@
           if (dist > 30 && time < 250) closeItemModal(activeListId);
         "
         :class="{ 'pt-4': !isTouchDevice }"
-        class="pointer-events-auto w-full max-w-lg bg-white-black p-4 pt-3 pb-[env(safe-area-inset-bottom)] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
+        class="pointer-events-auto w-full max-w-lg bg-white-black p-4 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
       >
         <div v-if="isTouchDevice" class="w-10 h-1 bg-gray-a4 mx-auto rounded-full"></div>
         
@@ -314,7 +314,7 @@
           if (dist > 30 && time < 250) closeListModal(activeListId);
         "
         :class="{ 'pt-4': !isTouchDevice }"
-        class="pointer-events-auto w-full max-w-lg bg-white-black p-4 pt-3 pb-[env(safe-area-inset-bottom)] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
+        class="pointer-events-auto w-full max-w-lg bg-white-black p-4 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
       >
         <div v-if="isTouchDevice" class="w-10 h-1 bg-gray-a4 mx-auto rounded-full"></div>
         
