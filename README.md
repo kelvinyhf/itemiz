@@ -1,6 +1,6 @@
-# Itemiz
+# [Itemiz](https://itemiz.pages.dev/)
 A minimalist, lightweight todo list web app with a simple and clean design.
-> This project was created as the final project for [CS50x](https://cs50.harvard.edu/x/). Click [here](https://example.com/) to watch the demo video.
+> This project was created as the final project for [CS50x](https://cs50.harvard.edu/x/). Click [here](https://youtu.be/OvHFFHyYfAc?si=6f4YcRA-mmMCjCh1) to watch the demo video.
 
 ## Background
 I built this app because I found tools like Trello and Notion too complicated for my personal use.
