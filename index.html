@@ -169,7 +169,7 @@
             :class="{ 'opacity-50': item.completed }"
             class="sr-only peer"
           >
-          <div class="w-5 h-5 border-2 border-gray-6 rounded-md bg-white-black flex items-center justify-center transition-all duration-200 peer-checked:bg-gray-7 peer-checked:border-gray-8 peer-checked:opacity-50">
+          <div class="w-5 h-5 border-2 border-gray-6 rounded-md bg-white-black flex items-center justify-center transition-all duration-200 peer-checked:bg-gray-9 peer-checked:border-gray-10 dark:peer-checked:bg-gray-10 dark:peer-checked:border-gray-11 peer-checked:opacity-50">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white-black pointer-events-none" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
           </div>
         </label>
@@ -375,10 +375,10 @@
     </section>
     
     <!-- Bottom Bar -->
-    <section id="bottom-bar" class="shrink-0 relative z-97 min-h-[125px] pb-[env(safe-area-inset-bottom)] flex justify-center items-center bg-gradient-to-b from-transparent to-gray-a3 pointer-events-none">
+    <section id="bottom-bar" class="fixed bottom-0 left-0 w-full z-97 min-h-[125px] pb-[env(safe-area-inset-bottom)] flex justify-center items-center bg-gradient-to-b from-transparent to-gray-a3 pointer-events-none">
       
       <!-- Toolbar -->
-      <div id="toolbar" class="pointer-events-auto touch-manipulation bg-white-black rounded-2xl px-4 py-2 flex gap-4">
+      <div id="toolbar" class="pointer-events-auto touch-manipulation bg-white-black rounded-2xl shadow-[0_2px_5px_var(--alpha-5)] px-4 py-2 flex gap-4">
         <button @click="addItem(activeListId)" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 flex items-center cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
         <button @click="openAboutModal()" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></button>
       </div>
