@@ -1,6 +1,7 @@
 // ------------------------------
 // Variables and Helpers
 // ------------------------------
+const USER_KEY = 'Itemiz_user_v1';
 const DATA_KEY = 'Itemiz_data_v1';
 const ACTIVE_LIST_ID_KEY = 'Itemiz_active_list_id_v1';
 const HAS_VISITED_KEY =  'Itemiz_has_visited_v1';
@@ -106,15 +107,25 @@ function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
 }
 
+// Parse Google JWT Token
+function parseJwt(token) {
+  const base64Url = token.split('.')[1];
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  return JSON.parse(window.atob(base64));
+}
+
 // ------------------------------
 // DOM Elements
 // ------------------------------
 const topBar = document.getElementById('top-bar');
 const itemsContainer = document.getElementById('items-container');
+
 const modals = document.getElementById('modals');
 const aboutModal = document.getElementById('about-modal');
 const itemModal = document.getElementById('item-modal');
 const listModal = document.getElementById('list-modal');
+const settingsModal = document.getElementById('settings-modal');
+
 const bottomBar = document.getElementById('bottom-bar');
 const toolbar = document.getElementById('toolbar');
 const trashCan = document.getElementById('trash-can');
@@ -135,10 +146,8 @@ function showChild(target, container, options = {}) {
   Array.from(container.children).forEach(child => {
     child.classList.remove(...allAnim);
     if (child === target) {
-      
       child.classList.remove('hidden');
       if (inAnim) child.classList.add(inAnim);
-      
     } else if (!child.classList.contains('hidden')) {
       
       // If the child is visible, hide it with optional animation
@@ -171,6 +180,22 @@ function slideBottomBar(dir) {
 // PetiteVue State
 // ------------------------------
 const state = PetiteVue.reactive({
+  
+  // User
+  user: JSON.parse(localStorage.getItem(USER_KEY) || 'null'),
+  handleGoogleLogin(response) {
+    const userData = parseJwt(response.credential);
+    this.user = {
+      name: userData.name,
+      email: userData.email,
+      picture: userData.picture
+    };
+    localStorage.setItem(USER_KEY, JSON.stringify(this.user));
+  },
+  logout() {
+    this.user = null;
+    localStorage.removeItem(USER_KEY);
+  },
   
   // Data Object
   data: JSON.parse(localStorage.getItem(DATA_KEY)) || DEFAULT_DATA,
@@ -371,6 +396,8 @@ const state = PetiteVue.reactive({
       this.closeListModal();
     } else if (!aboutModal.classList.contains('hidden')) {
       this.closeAboutModal();
+    } else if (!settingsModal.classList.contains('hidden')) {
+      this.closeSettingsModal();
     }
   },
   
@@ -519,6 +546,43 @@ const state = PetiteVue.reactive({
     this.closeListModal();
   },
   
+  // Settings Modal
+  openSettingsModal() {
+    this.showingOverlay = true;
+    showChild(settingsModal, modals, { inAnim: 'slide-in-animation' });
+    slideBottomBar('out');
+    
+    PetiteVue.nextTick(() => {
+      if (window.google && !this.user) {
+        google.accounts.id.initialize({
+          client_id: "95142095725-ffrnu8ij4sdimj6mve09bud00j7t1td3.apps.googleusercontent.com",
+          callback: (res) => this.handleGoogleLogin(res)
+        });
+        google.accounts.id.renderButton(
+          document.getElementById("google-signin-button"),
+          { theme: "outline", size: "medium", shape: "pill" }
+        );
+      }
+    });
+    
+  },
+  closeSettingsModal() {
+    showChild(null, modals, { outAnim: 'slide-out-animation', duration: getOutDuration() });
+    slideBottomBar('in');
+    
+    setTimeout(() => {
+      this.showingOverlay = false;
+    }, getOutDuration());
+    
+  },
+  saveSettingsModal() {
+    
+    // TODO
+    
+    // Close settings modal
+    this.closeSettingsModal();
+  },
+  
   // Swipe down var for modals
   startY: 0,
   startTime: 0
@@ -528,6 +592,7 @@ const state = PetiteVue.reactive({
 // ------------------------------
 // Initialization
 // ------------------------------
+window.handleCredentialResponse = (res) => state.handleGoogleLogin(res);
 PetiteVue.createApp(state).mount('body');
 state.checkWhetherVisited();
 state.initActiveListStyle();

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="overflow-hidden overscroll-none no-scrollbar">
+<html lang="en" style="visibility: hidden; opacity: 0; transition: opacity 0.2s ease-in;" class="overflow-hidden overscroll-none no-scrollbar">
 <head>
   
   <!-- Theme Detection -->
@@ -87,6 +87,17 @@
   <script src="./assets/libraries/petite-vue.js" defer></script>
   <script src="./assets/libraries/sortable.js" defer></script>
   <script src="./script.js" defer></script>
+  
+  <!-- GIS -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  
+  <!-- Prevent FOUC -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      document.documentElement.style.visibility = "visible";
+      document.documentElement.style.opacity = "1";
+    });
+  </script>
   
 </head>
 <body v-scope v-cloak class="overflow-hidden overscroll-none no-scrollbar select-none" :style="{ backgroundColor: (PALETTE[getListById(activeListId)?.color] || PALETTE['none']).bgColor }">
@@ -372,6 +383,43 @@
         
       </div>
       
+      <!-- Settings Modal -->
+      <div
+        id="settings-modal"
+        @touchstart="startY = $event.touches[0].clientY; startTime = Date.now()"
+        @touchend="
+          const dist = $event.changedTouches[0].clientY - startY;
+          const time = Date.now() - startTime;
+          if (dist > 30 && time < 250) closeSettingsModal();
+        "
+        :class="{ 'pt-4': !isTouchDevice }"
+        class="pointer-events-auto w-full max-w-lg bg-white-black p-6 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
+      >
+        <div v-if="isTouchDevice" class="w-10 h-1 bg-gray-a4 mx-auto rounded-full"></div>
+        
+        <!-- GIS UI -->
+        <div v-if="!user" class="flex justify-center my-4">
+          <div id="google-signin-button"></div>
+        </div>
+        <div v-else class="flex items-center justify-between p-4 bg-gray-1 border border-gray-2 rounded-xl my-4">
+          <span class="text-sm font-medium">Logged as <span class="font-semibold">{{ user.name }}</span></span>
+          <button @click="logout()" class="text-sm text-red-11">Logout</button>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="flex justify-center items-center gap-4 p-2">
+          <button
+            @click="closeSettingsModal()"
+            class="flex-1 p-2 bg-gray-1 text-gray-12 border border-gray-3 font-medium rounded-xl cursor-pointer hover:bg-gray-4 hover:text-gray-11 active:bg-gray-4 active:text-gray-11"
+          >Cancel</button>
+          <button
+            @click="saveSettingsModal()"
+            class="flex-1 p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer hover:bg-gray-10 hover:text-gray-2 active:bg-gray-10 active:text-gray-2"
+          >Save</button>
+        </div>
+        
+      </div>
+      
     </section>
     
     <!-- Bottom Bar -->
@@ -379,8 +427,9 @@
       
       <!-- Toolbar -->
       <div id="toolbar" class="pointer-events-auto touch-manipulation bg-white-black rounded-2xl shadow-[0_2px_5px_var(--alpha-5)] px-4 py-2 flex gap-4">
-        <button @click="addItem(activeListId)" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 flex items-center cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
         <button @click="openAboutModal()" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></button>
+        <button @click="addItem(activeListId)" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 flex items-center cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
+        <button @click="openSettingsModal()" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg></button>
       </div>
       
       <!-- Trash Can -->
