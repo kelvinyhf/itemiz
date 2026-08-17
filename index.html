@@ -83,13 +83,14 @@
     }
   </script>
   
+  <!-- GIS and Supabase -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  
   <!-- Petite Vue -->
   <script src="./assets/libraries/petite-vue.js" defer></script>
   <script src="./assets/libraries/sortable.js" defer></script>
   <script src="./script.js" defer></script>
-  
-  <!-- GIS -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
   
   <!-- Prevent FOUC -->
   <script>
@@ -399,7 +400,12 @@
         
         <!-- GIS UI -->
         <div v-if="!user" class="flex justify-center my-4">
-          <div id="google-signin-button"></div>
+          <div
+            id="g_id_onload"
+            data-client_id="95142095725-ffrnu8ij4sdimj6mve09bud00j7t1td3.apps.googleusercontent.com"
+            data-callback="handleCredentialResponse">
+          </div>
+          <div class="g_id_signin" data-type="standard" data-shape="pill"></div>
         </div>
         <div v-else class="flex items-center justify-between p-4 bg-gray-1 border border-gray-2 rounded-xl my-4">
           <span class="text-sm font-medium">Logged as <span class="font-semibold">{{ user.name }}</span></span>

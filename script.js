@@ -177,24 +177,51 @@ function slideBottomBar(dir) {
 }
 
 // ------------------------------
+// Supabase
+// ------------------------------
+const SUPABASE_URL = 'https://mdrnnkcizgvmycdbjozn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kcm5ua2Npemd2bXljZGJqb3puIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5NjE3NjQsImV4cCI6MjEwMjUzNzc2NH0.ZGV37Z9w4pK2oqZtdba_oNKb1Va6Dqw04riu6Q4c-bY';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function saveToSupabase(userEmail, data) {
+  const { error } = await supabaseClient
+    .from('user_data')
+    .upsert({ user_id: userEmail, data: data, updated_at: new Date() });
+  if (error) console.error("Supabase Sync Error:", error);
+}
+
+async function loadFromSupabase(userEmail) {
+  const { data } = await supabaseClient
+    .from('user_data')
+    .select('data')
+    .eq('user_id', userEmail)
+    .single();
+  if (data && data.data) {
+    state.data = data.data;
+    localStorage.setItem(DATA_KEY, JSON.stringify(state.data));
+  }
+}
+
+// ------------------------------
 // PetiteVue State
 // ------------------------------
 const state = PetiteVue.reactive({
   
-  // User
+  // User and Online Data
   user: JSON.parse(localStorage.getItem(USER_KEY) || 'null'),
   handleGoogleLogin(response) {
     const userData = parseJwt(response.credential);
     this.user = {
       name: userData.name,
-      email: userData.email,
-      picture: userData.picture
+      email: userData.email
     };
     localStorage.setItem(USER_KEY, JSON.stringify(this.user));
+    loadFromSupabase(this.user.email);
   },
   logout() {
     this.user = null;
     localStorage.removeItem(USER_KEY);
+    location.reload();
   },
   
   // Data Object
@@ -219,14 +246,14 @@ const state = PetiteVue.reactive({
   },
   setActiveList(id) {
     if (this.checkActiveList(id)) return;
-
+    
     const activeStyle = 'font-semibold scale-105';
-
+    
     // Remove old list's active style (if available)
     if (this.activeListId !== "" && document.getElementById(this.activeListId)) {
       document.getElementById(this.activeListId).classList.remove(...activeStyle.split(' '));
     }
-
+    
     // Add new list's active style (if available)
     if (id !== "" && document.getElementById(id)) {
       document.getElementById(id).classList.add(...activeStyle.split(' '));
@@ -235,7 +262,7 @@ const state = PetiteVue.reactive({
     // Set new active list
     this.activeListId = id;
     localStorage.setItem(ACTIVE_LIST_ID_KEY, id);
-      
+    
     // Hide toolbar when no active list, show when a list is selected
     if (id === "") {
       showChild(null, bottomBar, { outAnim: 'slide-out-animation-fast', duration: getFastOutDurarion() });
@@ -262,6 +289,7 @@ const state = PetiteVue.reactive({
   // Save Data
   save() {
     localStorage.setItem(DATA_KEY, JSON.stringify(this.data));
+    if (this.user) saveToSupabase(this.user.email, this.data);
   },
   
   // Add and Delete List
@@ -551,20 +579,6 @@ const state = PetiteVue.reactive({
     this.showingOverlay = true;
     showChild(settingsModal, modals, { inAnim: 'slide-in-animation' });
     slideBottomBar('out');
-    
-    PetiteVue.nextTick(() => {
-      if (window.google && !this.user) {
-        google.accounts.id.initialize({
-          client_id: "95142095725-ffrnu8ij4sdimj6mve09bud00j7t1td3.apps.googleusercontent.com",
-          callback: (res) => this.handleGoogleLogin(res)
-        });
-        google.accounts.id.renderButton(
-          document.getElementById("google-signin-button"),
-          { theme: "outline", size: "medium", shape: "pill" }
-        );
-      }
-    });
-    
   },
   closeSettingsModal() {
     showChild(null, modals, { outAnim: 'slide-out-animation', duration: getOutDuration() });
@@ -592,11 +606,14 @@ const state = PetiteVue.reactive({
 // ------------------------------
 // Initialization
 // ------------------------------
-window.handleCredentialResponse = (res) => state.handleGoogleLogin(res);
 PetiteVue.createApp(state).mount('body');
+window.handleCredentialResponse = (res) => state.handleGoogleLogin(res);
 state.checkWhetherVisited();
 state.initActiveListStyle();
 state.save();
+
+// If logged in, load data
+if (state.user) loadFromSupabase(state.user.email);
 
 // Initialize toolbar visibility
 if (!state.activeListId) {
