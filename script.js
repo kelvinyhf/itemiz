@@ -191,7 +191,9 @@ async function saveToSupabase(userEmail, data) {
   if (error) console.error("Supabase Sync Error:", error);
 }
 
-function mergeData(localData, cloudData) {
+function mergeData(localData = [], cloudData = []) {
+  if (!localData || localData.length === 0) return JSON.parse(JSON.stringify(cloudData || []));
+  if (!cloudData || cloudData.length === 0) return JSON.parse(JSON.stringify(localData || []));
   
   // Deep copy cloud data
   const listMap = new Map();
@@ -209,14 +211,25 @@ function mergeData(localData, cloudData) {
       
       // Deep copy cloud list
       const targetList = listMap.get(localList.id);
+      targetList.name = localList.name || targetList.name;
+      targetList.color = localList.color !== 'none' ? localList.color : targetList.color;
       const itemMap = new Map();
       (targetList.items || []).forEach(item => {
-        itemMap.set(item.id, item);
+        itemMap.set(item.id, JSON.parse(JSON.stringify(item)));
       });
       
       // Add new local items
-      (localList.items || []).forEach(item => {
-        itemMap.set(item.id, item);
+      (localList.items || []).forEach(localItem => {
+        if (!itemMap.has(localItem.id)) {
+          itemMap.set(localItem.id, JSON.parse(JSON.stringify(localItem)));
+        } else {
+          const existingItem = itemMap.get(localItem.id);
+          itemMap.set(localItem.id, {
+            ...existingItem,
+            ...JSON.parse(JSON.stringify(localItem)),
+            completed: localItem.completed || existingItem.completed
+          });
+        }
       });
       
       targetList.items = Array.from(itemMap.values());
