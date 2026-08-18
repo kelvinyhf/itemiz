@@ -9,7 +9,7 @@ const HAS_VISITED_KEY =  'Itemiz_has_visited_v1';
 const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
 const isMobile = () => window.matchMedia('(width < 768px)').matches;
 const getOutDuration = () => (isMobile() ? 225 : 75);
-const getFastOutDurarion = () => (isMobile() ? 125 : 50);
+const getFastOutDuration = () => (isMobile() ? 125 : 50);
 
 // Color palette for item colors
 const PALETTE = {
@@ -71,36 +71,37 @@ const PALETTE = {
 
 // Default data object if localStorage is empty
 const DEFAULT_DATA = [
-{
-  id: generateId(),
-  name: "Tutorial",
-  color: "none",
-  items: [
   {
     id: generateId(),
-    title: "Click to edit!",
-    desc: "Can add description too",
+    name: "Tutorial",
     color: "none",
-    date: "",
-    completed: false
-  },
-  {
-    id: generateId(),
-    title: "Drag to sort",
-    desc: "",
-    color: "none",
-    date: "",
-    completed: false
-  },
-  {
-    id: generateId(),
-    title: "That's it!",
-    desc: "Hope you like :)",
-    color: "none",
-    date: "",
-    completed: true
-  }]
-}]
+    items: [
+    {
+      id: generateId(),
+      title: "Click to edit!",
+      desc: "Can add description too",
+      color: "none",
+      date: "",
+      completed: false
+    },
+    {
+      id: generateId(),
+      title: "Drag to sort",
+      desc: "",
+      color: "none",
+      date: "",
+      completed: false
+    },
+    {
+      id: generateId(),
+      title: "That's it!",
+      desc: "Hope you like :)",
+      color: "none",
+      date: "",
+      completed: true
+    }]
+  }
+]
 
 // Generate random Id
 function generateId() {
@@ -190,6 +191,42 @@ async function saveToSupabase(userEmail, data) {
   if (error) console.error("Supabase Sync Error:", error);
 }
 
+function mergeData(localData, cloudData) {
+  
+  // Deep copy cloud data
+  const listMap = new Map();
+  cloudData.forEach(list => {
+    listMap.set(list.id, JSON.parse(JSON.stringify(list)));
+  });
+  
+  // Compare with local data
+  localData.forEach(localList => {
+    
+    // If cloud data don't have this list, add to cloud
+    if (!listMap.has(localList.id)) {
+      listMap.set(localList.id, JSON.parse(JSON.stringify(localList)));
+    } else {
+      
+      // Deep copy cloud list
+      const targetList = listMap.get(localList.id);
+      const itemMap = new Map();
+      (targetList.items || []).forEach(item => {
+        itemMap.set(item.id, item);
+      });
+      
+      // Add new local items
+      (localList.items || []).forEach(item => {
+        itemMap.set(item.id, item);
+      });
+      
+      targetList.items = Array.from(itemMap.values());
+    }
+    
+  });
+  return Array.from(listMap.values());
+  
+}
+
 async function loadFromSupabase(userEmail) {
   const { data } = await supabaseClient
     .from('user_data')
@@ -197,8 +234,9 @@ async function loadFromSupabase(userEmail) {
     .eq('user_id', userEmail)
     .single();
   if (data && data.data) {
-    state.data = data.data;
-    localStorage.setItem(DATA_KEY, JSON.stringify(state.data));
+    const mergedData = mergeData(state.data, data.data);
+    state.data = mergedData;
+    state.save();
   }
 }
 
@@ -265,7 +303,7 @@ const state = PetiteVue.reactive({
     
     // Hide toolbar when no active list, show when a list is selected
     if (id === "") {
-      showChild(null, bottomBar, { outAnim: 'slide-out-animation-fast', duration: getFastOutDurarion() });
+      showChild(null, bottomBar, { outAnim: 'slide-out-animation-fast', duration: getFastOutDuration() });
     } else {
       showChild(toolbar, bottomBar, { inAnim: 'slide-in-animation-fast' });
     }
