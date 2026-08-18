@@ -227,15 +227,15 @@ function mergeData(localData, cloudData) {
   
 }
 
-async function loadFromSupabase(userEmail) {
+async function loadFromSupabase(userEmail, isLogin) {
   const { data } = await supabaseClient
     .from('user_data')
     .select('data')
     .eq('user_id', userEmail)
     .single();
   if (data && data.data) {
-    const mergedData = mergeData(state.data, data.data);
-    state.data = mergedData;
+    const updatedData = isLogin ? mergeData(state.data, data.data) : data.data;
+    state.data = updatedData;
     state.save();
   }
 }
@@ -254,7 +254,7 @@ const state = PetiteVue.reactive({
       email: userData.email
     };
     localStorage.setItem(USER_KEY, JSON.stringify(this.user));
-    loadFromSupabase(this.user.email);
+    loadFromSupabase(this.user.email, true);
   },
   logout() {
     this.user = null;
@@ -651,7 +651,7 @@ state.initActiveListStyle();
 state.save();
 
 // If logged in, load data
-if (state.user) loadFromSupabase(state.user.email);
+if (state.user) loadFromSupabase(state.user.email, false);
 
 // Initialize toolbar visibility
 if (!state.activeListId) {
