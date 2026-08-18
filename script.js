@@ -415,6 +415,7 @@ const state = PetiteVue.reactive({
     
     // Open Item Modal
     this.itemPressStartTime = Date.now();
+    this.isNewItem = true;
     this.openItemModal(newItem);
     PetiteVue.nextTick(() => {
       
@@ -509,6 +510,7 @@ const state = PetiteVue.reactive({
   // Item Modal
   itemPressStartTime: null,
   itemIsDragging: false,
+  isNewItem: false,
   editingItem: { id: "", title: "", desc: "", color: "none", date: "", completed: false },
   
   // When pointer is down, start counting
@@ -540,6 +542,13 @@ const state = PetiteVue.reactive({
   
   // Reset editingItem and hide overlay after animations
   closeItemModal() {
+    
+    // Delete the item if it's new
+    if (this.isNewItem) {
+      this.deleteItemById(this.activeListId, this.editingItem.id);
+      this.isNewItem = false;
+    }
+    
     showChild(null, modals, { outAnim: 'slide-out-animation', duration: getOutDuration() });
     slideBottomBar('in');
     
@@ -547,7 +556,7 @@ const state = PetiteVue.reactive({
       this.editingItem = { id: "", title: "", desc: "", color: "none", date: "", completed: false };
       this.showingOverlay = false;
     }, getOutDuration());
-
+    
   },
   
   saveItemModal(listId) {
@@ -566,6 +575,7 @@ const state = PetiteVue.reactive({
     }
     
     // Close item modal
+    this.isNewItem = false;
     this.closeItemModal();
   },
   
@@ -654,7 +664,46 @@ const state = PetiteVue.reactive({
   
   // Swipe down var for modals
   startY: 0,
-  startTime: 0
+  startTime: 0,
+  
+  // Export Data
+  exportData() {
+    const blob = new Blob([JSON.stringify(this.data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `Itemiz_backup_${this.currentDate()}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  },
+  
+  // Import Data
+  importData(evt) {
+    
+    // Get the file, return if no
+    const file = evt.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const importedData = JSON.parse(e.target.result);
+        
+        // Merge and save data if in correct format
+        if (Array.isArray(importedData)) {
+          this.data = mergeData(this.data, importedData);
+          this.save();
+          alert('Data merged successfully.');
+        } else {
+          alert('Invalid file format.');
+        }
+        
+      } catch (err) {
+        alert('Failed to read JSON file.');
+      }
+      evt.target.value = '';
+    };
+    reader.readAsText(file);
+  }
   
 });
 

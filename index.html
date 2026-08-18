@@ -370,7 +370,7 @@
             class="touch-manipulation shrink-0 p-2 bg-red-2 text-red-11 border border-red-3 font-medium rounded-xl flex items-center cursor-pointer hover:bg-red-4 hover:text-red-9 active:bg-red-4 active:text-red-9"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            <span :class="confirmDelete ? 'max-w-md opacity-100 ml-2 mr-1' : 'max-w-0 opacity-0'" class="block text-md font-medium transition-[max-width,opacity] duration-200 overflow-hidden whitespace-nowrap">Sure?</span>
+            <span :class="confirmDelete ? 'max-w-md opacity-100 ml-2 mr-1' : 'max-w-0 opacity-0'" class="block text-md font-medium transition-max-w duration-200 overflow-hidden whitespace-nowrap">Sure?</span>
           </button>
           <button
             @click="closeListModal()"
@@ -398,8 +398,14 @@
       >
         <div v-if="isTouchDevice" class="w-10 h-1 bg-gray-a4 mx-auto rounded-full"></div>
         
+        <!-- Heading and Sync State -->
+        <div class="flex items-center justify-between w-full">
+          <h2 class="text-xl font-bold">Settings</h2>
+          <span class="text-sm text-green-11 font-semibold">&#10003; Data Synced</span>
+        </div>
+        
         <!-- GIS UI -->
-        <div v-if="!user" class="flex justify-center my-4">
+        <div v-if="!user" class="flex justify-center p-6 pt-3 border-b border-gray-10 my-2">
           <div
             id="g_id_onload"
             data-client_id="95142095725-ffrnu8ij4sdimj6mve09bud00j7t1td3.apps.googleusercontent.com"
@@ -407,9 +413,30 @@
           </div>
           <div class="g_id_signin" data-type="standard" data-shape="pill"></div>
         </div>
-        <div v-else class="flex items-center justify-between p-4 bg-gray-1 border border-gray-2 rounded-xl my-4">
+        <div v-else class="flex items-center justify-between p-4 border-b border-gray-10 my-2">
           <span class="text-sm font-medium">Logged as <span class="font-semibold">{{ user.name }}</span></span>
           <button @click="logout()" class="text-sm text-red-11 font-medium cursor-pointer">Logout</button>
+        </div>
+        
+        <!-- Import/Export Data --->
+        <div class="flex items-center justify-between w-full mb-4">
+          <label class="flex-1 flex justify-center cursor-pointer">
+            <span class="text-green-12 text-sm font-medium border-b border-green-11">Import Data</span>
+            <input
+              type="file"
+              accept=".json"
+              @change="importData($event)"
+              class="hidden"
+            >
+          </label>
+          <span>|</span>
+          <button 
+            type="button" 
+            @click="exportData()" 
+            class="flex-1 flex justify-center cursor-pointer"
+          >
+            <span class="text-red-12 text-sm font-medium border-b border-red-11">Export Data</span>
+          </button>
         </div>
         
         <!-- Action Buttons -->
