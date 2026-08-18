@@ -232,7 +232,7 @@ async function loadFromSupabase(userEmail, isLogin) {
     .from('user_data')
     .select('data')
     .eq('user_id', userEmail)
-    .single();
+    .maybeSingle();
   if (data && data.data) {
     const updatedData = isLogin ? mergeData(state.data, data.data) : data.data;
     state.data = updatedData;
@@ -247,16 +247,33 @@ const state = PetiteVue.reactive({
   
   // User and Online Data
   user: JSON.parse(localStorage.getItem(USER_KEY) || 'null'),
-  handleGoogleLogin(response) {
-    const userData = parseJwt(response.credential);
-    this.user = {
-      name: userData.name,
-      email: userData.email
-    };
-    localStorage.setItem(USER_KEY, JSON.stringify(this.user));
-    loadFromSupabase(this.user.email, true);
+  async handleGoogleLogin(response) {
+    try {
+      
+      // Sign in
+      const { data, error } = await supabaseClient.auth.signInWithIdToken({
+        provider: 'google',
+        token: response.credential,
+      });
+      if (error) throw error;
+      
+      // User info
+      const user = data.user;
+      this.user = {
+        name: user.user_metadata.full_name || user.email.split('@')[0],
+        email: user.email
+      };
+      
+      // Save user and load cloud data
+      localStorage.setItem(USER_KEY, JSON.stringify(this.user));
+      await loadFromSupabase(this.user.email, true);
+      
+    } catch (err) {
+      console.error("Supabase Auth Error:", err.message);
+    }
   },
-  logout() {
+  async logout() {
+    await supabaseClient.auth.signOut();
     this.user = null;
     localStorage.removeItem(USER_KEY);
     location.reload();
