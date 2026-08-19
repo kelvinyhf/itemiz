@@ -250,7 +250,7 @@
         @touchend="
           const dist = $event.changedTouches[0].clientY - startY;
           const time = Date.now() - startTime;
-          if (dist > 30 && time < 250) closeItemModal(activeListId);
+          if (dist > 30 && time < 250) closeItemModal();
         "
         :class="{ 'pt-4': !isTouchDevice }"
         class="pointer-events-auto w-full max-w-lg bg-white-black p-4 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
@@ -305,7 +305,7 @@
             class="shrink-0 p-2 bg-red-2 text-red-11 border border-red-3 font-medium rounded-xl cursor-pointer hover:bg-red-4 hover:text-red-9 active:bg-red-4 active:text-red-9"
           ><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
           <button
-            @click="closeItemModal()"
+            @click="closeItemModal(true)"
             class="flex-1 p-2 bg-gray-1 text-gray-12 border border-gray-3 font-medium rounded-xl cursor-pointer hover:bg-gray-4 hover:text-gray-11 active:bg-gray-4 active:text-gray-11"
           >Cancel</button>
           <button
@@ -419,7 +419,7 @@
         </div>
         
         <!-- Import/Export Data --->
-        <div class="flex items-center justify-between w-full mb-4">
+        <div class="flex items-center justify-between w-full mb-6">
           <label class="flex-1 flex justify-center cursor-pointer">
             <span class="text-green-12 text-sm font-medium border-b border-green-11">Import Data</span>
             <input
@@ -440,16 +440,10 @@
         </div>
         
         <!-- Action Buttons -->
-        <div class="flex justify-center items-center gap-4 p-2">
-          <button
-            @click="closeSettingsModal()"
-            class="flex-1 p-2 bg-gray-1 text-gray-12 border border-gray-3 font-medium rounded-xl cursor-pointer hover:bg-gray-4 hover:text-gray-11 active:bg-gray-4 active:text-gray-11"
-          >Cancel</button>
-          <button
-            @click="saveSettingsModal()"
-            class="flex-1 p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer hover:bg-gray-10 hover:text-gray-2 active:bg-gray-10 active:text-gray-2"
-          >Save</button>
-        </div>
+        <button
+          @click="closeSettingsModal()"
+          class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer hover:bg-gray-10 hover:text-gray-2 active:bg-gray-10 active:text-gray-2"
+        >Close</button>
         
       </div>
       

@@ -75,6 +75,7 @@ const DEFAULT_DATA = [
     id: generateId(),
     name: "Tutorial",
     color: "none",
+    updatedAt: Date.now(),
     items: [
     {
       id: generateId(),
@@ -82,7 +83,8 @@ const DEFAULT_DATA = [
       desc: "Can add description too",
       color: "none",
       date: "",
-      completed: false
+      completed: false,
+      updatedAt: Date.now()
     },
     {
       id: generateId(),
@@ -90,7 +92,8 @@ const DEFAULT_DATA = [
       desc: "",
       color: "none",
       date: "",
-      completed: false
+      completed: false,
+      updatedAt: Date.now()
     },
     {
       id: generateId(),
@@ -98,10 +101,40 @@ const DEFAULT_DATA = [
       desc: "Hope you like :)",
       color: "none",
       date: "",
-      completed: true
+      completed: true,
+      updatedAt: Date.now()
     }]
   }
 ]
+
+// Get data function (for version migrations)
+function getData(data) {
+  if (!Array.isArray(data)) return data;
+  
+  // v1 to v2 - Add "updatedAt" property
+  const currentTime = Date.now();
+  const updatedData = data.map(list => {
+    const listUpdatedAt = list.updatedAt ? list.updatedAt : currentTime;
+    
+    // Ensure all items have updatedAt
+    const updatedItems = list.items.map(item => {
+      const itemUpdatedAt = item.updatedAt ? item.updatedAt : currentTime;
+      return {
+        ...item,
+        updatedAt: itemUpdatedAt
+      };
+    });
+    
+    // Ensure all lists have updatedAt
+    return {
+      ...list,
+      updatedAt: listUpdatedAt,
+      items: updatedItems
+    };
+  });
+
+  return updatedData;
+}
 
 // Generate random Id
 function generateId() {
@@ -178,17 +211,30 @@ function slideBottomBar(dir) {
 }
 
 // ------------------------------
-// Supabase
+// Firebase
 // ------------------------------
-const SUPABASE_URL = 'https://mdrnnkcizgvmycdbjozn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kcm5ua2Npemd2bXljZGJqb3puIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5NjE3NjQsImV4cCI6MjEwMjUzNzc2NH0.ZGV37Z9w4pK2oqZtdba_oNKb1Va6Dqw04riu6Q4c-bY';
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const FIREBASE_URL = 'https://itemiz-db-default-rtdb.firebaseio.com/';
 
-async function saveToSupabase(userEmail, data) {
-  const { error } = await supabaseClient
-    .from('user_data')
-    .upsert({ user_id: userEmail, data: data, updated_at: new Date() });
-  if (error) console.error("Supabase Sync Error:", error);
+function getUserPath(email) {
+  const key = email.replace(/\./g, '_');
+  return `${FIREBASE_URL}/${key}.json`;
+}
+
+async function saveToCloud(userEmail) {
+  try {
+    
+    // Save data on cloud
+    const res = await fetch(getUserPath(userEmail), {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(state.data)
+    });
+    
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 function mergeData(localData = [], cloudData = []) {
@@ -209,12 +255,15 @@ function mergeData(localData = [], cloudData = []) {
       listMap.set(localList.id, JSON.parse(JSON.stringify(localList)));
     } else {
       
-      // Deep copy cloud list
-      const targetList = listMap.get(localList.id);
-      targetList.name = localList.name || targetList.name;
-      targetList.color = localList.color !== 'none' ? localList.color : targetList.color;
+      // Compare updatedAt to get the latest list
+      const cloudList = listMap.get(localList.id);
+      const targetList = (localList.updatedAt || 0) > (cloudList.updatedAt || 0) ?
+        JSON.parse(JSON.stringify(localList)) :
+        cloudList;
+      
+      // Merge item
       const itemMap = new Map();
-      (targetList.items || []).forEach(item => {
+      (cloudList.items || []).forEach(item => {
         itemMap.set(item.id, JSON.parse(JSON.stringify(item)));
       });
       
@@ -223,16 +272,28 @@ function mergeData(localData = [], cloudData = []) {
         if (!itemMap.has(localItem.id)) {
           itemMap.set(localItem.id, JSON.parse(JSON.stringify(localItem)));
         } else {
-          const existingItem = itemMap.get(localItem.id);
-          itemMap.set(localItem.id, {
-            ...existingItem,
-            ...JSON.parse(JSON.stringify(localItem)),
-            completed: localItem.completed || existingItem.completed
-          });
+          
+          // Compare updatedAt to get the latest item
+          const cloudItem = itemMap.get(localItem.id);
+          const newerItem = (localItem.updatedAt || 0) > (cloudItem.updatedAt || 0) ?
+            localItem :
+            cloudItem;
+          itemMap.set(newerItem.id, JSON.parse(JSON.stringify(newerItem)));
+          
         }
       });
       
+      // Set updated items
       targetList.items = Array.from(itemMap.values());
+      
+      // Get the latest updatedAt from all the items of a list and assign it to the list itself
+      const latestItemTime = targetList.items.reduce((max, item) => {
+        return Math.max(max, item.updatedAt || 0);
+      }, 0);
+      targetList.updatedAt = Math.max(targetList.updatedAt || 0, latestItemTime);
+      
+      // Set updated lists
+      listMap.set(targetList.id, targetList);
     }
     
   });
@@ -240,16 +301,20 @@ function mergeData(localData = [], cloudData = []) {
   
 }
 
-async function loadFromSupabase(userEmail, isLogin) {
-  const { data } = await supabaseClient
-    .from('user_data')
-    .select('data')
-    .eq('user_id', userEmail)
-    .maybeSingle();
-  if (data && data.data) {
-    const updatedData = isLogin ? mergeData(state.data, data.data) : data.data;
-    state.data = updatedData;
-    state.save();
+async function loadFromCloud(userEmail, isLogin = false) {
+  try {
+    
+    // Get cloud data and merge/load it
+    const res = await fetch(getUserPath(userEmail));
+    const cloudData = await res.json();
+    if (cloudData && Array.isArray(cloudData)) {
+      const updatedData = isLogin ? mergeData(state.data, cloudData) : cloudData;
+      state.data = updatedData;
+      state.save();
+    }
+    
+  } catch (err) {
+    console.error(err);
   }
 }
 
@@ -258,42 +323,34 @@ async function loadFromSupabase(userEmail, isLogin) {
 // ------------------------------
 const state = PetiteVue.reactive({
   
-  // User and Online Data
+  // User and Cloud Data
   user: JSON.parse(localStorage.getItem(USER_KEY) || 'null'),
-  async handleGoogleLogin(response) {
+  async login(response) {
     try {
       
-      // Sign in
-      const { data, error } = await supabaseClient.auth.signInWithIdToken({
-        provider: 'google',
-        token: response.credential,
-      });
-      if (error) throw error;
-      
-      // User info
-      const user = data.user;
+      // Login and get user info
+      const payload = parseJwt(response.credential);
       this.user = {
-        name: user.user_metadata.full_name || user.email.split('@')[0],
-        email: user.email
+        name: payload.name,
+        email: payload.email
       };
       
       // Save user and load cloud data
       localStorage.setItem(USER_KEY, JSON.stringify(this.user));
-      await loadFromSupabase(this.user.email, true);
+      await loadFromCloud(this.user.email, true);
       
     } catch (err) {
-      console.error("Supabase Auth Error:", err.message);
+      console.error("Login Error:", err);
     }
   },
   async logout() {
-    await supabaseClient.auth.signOut();
     this.user = null;
     localStorage.removeItem(USER_KEY);
     location.reload();
   },
   
   // Data Object
-  data: JSON.parse(localStorage.getItem(DATA_KEY)) || DEFAULT_DATA,
+  data: getData(JSON.parse(localStorage.getItem(DATA_KEY))) || DEFAULT_DATA,
   
   // Active list Id (from localStorage or first list)
   activeListId: (() => {
@@ -310,7 +367,7 @@ const state = PetiteVue.reactive({
     
   })(),
   checkActiveList(id) {
-    if (this.activeListId === id) return true;
+    return this.activeListId === id;
   },
   setActiveList(id) {
     if (this.checkActiveList(id)) return;
@@ -357,12 +414,29 @@ const state = PetiteVue.reactive({
   // Save Data
   save() {
     localStorage.setItem(DATA_KEY, JSON.stringify(this.data));
-    if (this.user) saveToSupabase(this.user.email, this.data);
+    if (this.user) saveToCloud(this.user.email);
   },
   
   // Add and Delete List
   addList() {
-    const newList = { id: generateId(), name: "", color: "none", items: [{ id: generateId(), title: "Click to edit", desc: "", color: "none", date: "", completed: false }] };
+    const newList = {
+      id: generateId(),
+      name: "",
+      color: "none",
+      updatedAt: Date.now(),
+      items: [
+        {
+          id: generateId(),
+          title: "Click to edit",
+          desc: "",
+          color: "none",
+          date: "",
+          completed: false,
+          updatedAt: Date.now()
+        }
+      ]
+    };
+    
     this.data.push(newList);
     this.save();
     
@@ -422,7 +496,16 @@ const state = PetiteVue.reactive({
   
   // Add and Delete Item
   addItem(listId) {
-    const newItem = { id: generateId(), title: "", desc: "", color: "none", date: "", completed: false };
+    const newItem = {
+      id: generateId(),
+      title: "",
+      desc: "",
+      color: "none",
+      date: "",
+      completed: false,
+      updatedAt: Date.now()
+    };
+    
     this.getItemsById(listId).push(newItem);
     this.save();
     
@@ -524,7 +607,7 @@ const state = PetiteVue.reactive({
   itemPressStartTime: null,
   itemIsDragging: false,
   isNewItem: false,
-  editingItem: { id: "", title: "", desc: "", color: "none", date: "", completed: false },
+  editingItem: { id: "", title: "", desc: "", color: "none", date: "", completed: false, updatedAt: 0 },
   
   // When pointer is down, start counting
   onItemPointerDown(evt) {
@@ -554,19 +637,17 @@ const state = PetiteVue.reactive({
   },
   
   // Reset editingItem and hide overlay after animations
-  closeItemModal() {
+  closeItemModal(isCancelling = false) {
     
     // Delete the item if it's new
-    if (this.isNewItem) {
-      this.deleteItemById(this.activeListId, this.editingItem.id);
-      this.isNewItem = false;
-    }
+    if (this.isNewItem && isCancelling) this.deleteItemById(this.activeListId, this.editingItem.id);
+    this.isNewItem = false;
     
     showChild(null, modals, { outAnim: 'slide-out-animation', duration: getOutDuration() });
     slideBottomBar('in');
     
     setTimeout(() => {
-      this.editingItem = { id: "", title: "", desc: "", color: "none", date: "", completed: false };
+      this.editingItem = { id: "", title: "", desc: "", color: "none", date: "", completed: false, updatedAt: 0 };
       this.showingOverlay = false;
     }, getOutDuration());
     
@@ -584,6 +665,7 @@ const state = PetiteVue.reactive({
         const value = this.editingItem[key];
         targetItems[index][key] = typeof value === 'string' ? value.trim() : value;
       });
+      targetItems[index].updatedAt = Date.now();
       this.save();
     }
     
@@ -595,7 +677,7 @@ const state = PetiteVue.reactive({
   // List Modal
   listPressStartTime: null,
   listIsDragging: false,
-  editingList: { id: "", name: "", color: "none", items: [] },
+  editingList: { id: "", name: "", color: "none", updatedAt: 0, items: [] },
   
   // When pointer is down, start counting
   onListPointerDown(evt) {
@@ -630,7 +712,7 @@ const state = PetiteVue.reactive({
     slideBottomBar('in');
     
     setTimeout(() => {
-      this.editingList = { id: "", name: "", color: "none", items: [] };
+      this.editingList = { id: "", name: "", color: "none", updatedAt: 0, items: [] };
       this.showingOverlay = false;
     }, getOutDuration());
 
@@ -646,6 +728,7 @@ const state = PetiteVue.reactive({
       const value = this.editingList[key];
       targetList[key] = typeof value === 'string' ? value.trim() : value;
     });
+    targetList.updatedAt = Date.now();
     this.save();
     
     // Close list modal
@@ -666,13 +749,6 @@ const state = PetiteVue.reactive({
       this.showingOverlay = false;
     }, getOutDuration());
     
-  },
-  saveSettingsModal() {
-    
-    // TODO
-    
-    // Close settings modal
-    this.closeSettingsModal();
   },
   
   // Swipe down var for modals
@@ -724,13 +800,13 @@ const state = PetiteVue.reactive({
 // Initialization
 // ------------------------------
 PetiteVue.createApp(state).mount('body');
-window.handleCredentialResponse = (res) => state.handleGoogleLogin(res);
+window.handleCredentialResponse = (res) => state.login(res);
 state.checkWhetherVisited();
 state.initActiveListStyle();
 state.save();
 
 // If logged in, load data
-if (state.user) loadFromSupabase(state.user.email, false);
+if (state.user) loadFromCloud(state.user.email, false);
 
 // Initialize toolbar visibility
 if (!state.activeListId) {
@@ -838,6 +914,7 @@ Sortable.create(itemsContainer, {
     
     // Update original items and save
     targetList.items = updatedItems;
+    targetList.updatedAt = Date.now();
     state.save();
     
   }
@@ -897,6 +974,7 @@ Sortable.create(topBar, {
     
     // Update original data and save
     state.data = updatedData;
+    movedList.updatedAt = Date.now();
     state.save();
     
   }
