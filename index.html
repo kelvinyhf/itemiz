@@ -135,6 +135,7 @@
             color: theme.textColor,
           };
         })()"
+        :class="{ 'font-semibold scale-105': checkActiveList(list.id) }"
         class="tabs h-[75%] text-sm bg-gray-1 shadow-[0_-1px_5px_rgba(0,0,0,0.01)] px-4 py-2 first:ml-4 last:mr-4 rounded-t-lg flex justify-center items-center shrink-0 whitespace-nowrap"
       >
         <span>{{ list.name || 'New List' }}</span>

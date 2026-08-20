@@ -237,68 +237,21 @@ async function saveToCloud(userEmail) {
   }
 }
 
-function mergeData(localData = [], cloudData = []) {
-  if (!localData || localData.length === 0) return JSON.parse(JSON.stringify(cloudData || []));
-  if (!cloudData || cloudData.length === 0) return JSON.parse(JSON.stringify(localData || []));
-  
-  // Deep copy cloud data
-  const listMap = new Map();
-  cloudData.forEach(list => {
-    listMap.set(list.id, JSON.parse(JSON.stringify(list)));
+function importAsNew(existingData = [], incomingData = []) {
+  const currentTime = Date.now();
+  const newData = incomingData.map(list => {
+    return {
+      ...list,
+      id: generateId(),
+      updatedAt: currentTime,
+      items: (list.items || []).map(item => ({
+        ...item,
+        id: generateId(),
+        updatedAt: currentTime
+      }))
+    };
   });
-  
-  // Compare with local data
-  localData.forEach(localList => {
-    
-    // If cloud data don't have this list, add to cloud
-    if (!listMap.has(localList.id)) {
-      listMap.set(localList.id, JSON.parse(JSON.stringify(localList)));
-    } else {
-      
-      // Compare updatedAt to get the latest list
-      const cloudList = listMap.get(localList.id);
-      const targetList = (localList.updatedAt || 0) > (cloudList.updatedAt || 0) ?
-        JSON.parse(JSON.stringify(localList)) :
-        cloudList;
-      
-      // Merge item
-      const itemMap = new Map();
-      (cloudList.items || []).forEach(item => {
-        itemMap.set(item.id, JSON.parse(JSON.stringify(item)));
-      });
-      
-      // Add new local items
-      (localList.items || []).forEach(localItem => {
-        if (!itemMap.has(localItem.id)) {
-          itemMap.set(localItem.id, JSON.parse(JSON.stringify(localItem)));
-        } else {
-          
-          // Compare updatedAt to get the latest item
-          const cloudItem = itemMap.get(localItem.id);
-          const newerItem = (localItem.updatedAt || 0) > (cloudItem.updatedAt || 0) ?
-            localItem :
-            cloudItem;
-          itemMap.set(newerItem.id, JSON.parse(JSON.stringify(newerItem)));
-          
-        }
-      });
-      
-      // Set updated items
-      targetList.items = Array.from(itemMap.values());
-      
-      // Get the latest updatedAt from all the items of a list and assign it to the list itself
-      const latestItemTime = targetList.items.reduce((max, item) => {
-        return Math.max(max, item.updatedAt || 0);
-      }, 0);
-      targetList.updatedAt = Math.max(targetList.updatedAt || 0, latestItemTime);
-      
-      // Set updated lists
-      listMap.set(targetList.id, targetList);
-    }
-    
-  });
-  return Array.from(listMap.values());
-  
+  return [...existingData, ...newData];
 }
 
 async function loadFromCloud(userEmail, isLogin = false) {
@@ -308,7 +261,7 @@ async function loadFromCloud(userEmail, isLogin = false) {
     const res = await fetch(getUserPath(userEmail));
     const cloudData = await res.json();
     if (cloudData && Array.isArray(cloudData)) {
-      const updatedData = isLogin ? mergeData(state.data, cloudData) : cloudData;
+      const updatedData = isLogin ? importAsNew(state.data, cloudData) : cloudData;
       state.data = updatedData;
       state.save();
     }
@@ -372,18 +325,6 @@ const state = PetiteVue.reactive({
   setActiveList(id) {
     if (this.checkActiveList(id)) return;
     
-    const activeStyle = 'font-semibold scale-105';
-    
-    // Remove old list's active style (if available)
-    if (this.activeListId !== "" && document.getElementById(this.activeListId)) {
-      document.getElementById(this.activeListId).classList.remove(...activeStyle.split(' '));
-    }
-    
-    // Add new list's active style (if available)
-    if (id !== "" && document.getElementById(id)) {
-      document.getElementById(id).classList.add(...activeStyle.split(' '));
-    }
-    
     // Set new active list
     this.activeListId = id;
     localStorage.setItem(ACTIVE_LIST_ID_KEY, id);
@@ -395,11 +336,6 @@ const state = PetiteVue.reactive({
       showChild(toolbar, bottomBar, { inAnim: 'slide-in-animation-fast' });
     }
     
-  },
-  initActiveListStyle() {
-    const activeStyle = 'font-semibold scale-105';
-    const activeListEl = document.getElementById(this.activeListId);
-    if (activeListEl) activeListEl.classList.add(...activeStyle.split(' '));
   },
   
   // Get List and Items by Id
@@ -714,8 +650,9 @@ const state = PetiteVue.reactive({
     setTimeout(() => {
       this.editingList = { id: "", name: "", color: "none", updatedAt: 0, items: [] };
       this.showingOverlay = false;
+      this.confirmDelete = false;
     }, getOutDuration());
-
+    
   },
   
   saveListModal(listId) {
@@ -779,7 +716,7 @@ const state = PetiteVue.reactive({
         
         // Merge and save data if in correct format
         if (Array.isArray(importedData)) {
-          this.data = mergeData(this.data, importedData);
+          this.data = importAsNew(this.data, importedData);
           this.save();
           alert('Data merged successfully.');
         } else {
@@ -802,7 +739,6 @@ const state = PetiteVue.reactive({
 PetiteVue.createApp(state).mount('body');
 window.handleCredentialResponse = (res) => state.login(res);
 state.checkWhetherVisited();
-state.initActiveListStyle();
 state.save();
 
 // If logged in, load data
