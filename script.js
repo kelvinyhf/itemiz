@@ -263,7 +263,7 @@ async function loadFromCloud(userEmail, isLogin = false) {
     if (cloudData && Array.isArray(cloudData)) {
       const updatedData = isLogin ? importAsNew(state.data, cloudData) : cloudData;
       state.data = updatedData;
-      state.save();
+      localStorage.setItem(DATA_KEY, JSON.stringify(state.data));
     }
     
   } catch (err) {
@@ -739,7 +739,6 @@ const state = PetiteVue.reactive({
 PetiteVue.createApp(state).mount('body');
 window.handleCredentialResponse = (res) => state.login(res);
 state.checkWhetherVisited();
-state.save();
 
 // If logged in, load data
 if (state.user) loadFromCloud(state.user.email, false);
@@ -750,6 +749,9 @@ if (!state.activeListId) {
 } else {
   showChild(toolbar, bottomBar, { inAnim: 'slide-in-animation-fast' });
 }
+
+// Initial Save
+state.save();
 
 // ------------------------------
 // SortableJS - Items

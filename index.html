@@ -83,9 +83,31 @@
     }
   </script>
   
-  <!-- GIS and Supabase -->
+  <!-- GIS and Firebase -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    
+    const firebaseConfig = { databaseURL: "https://itemiz-db-default-rtdb.firebaseio.com/" };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    
+    window.listenToCloudChanges = function(userEmail) {
+      if (!userEmail) return;
+      
+      const key = userEmail.replace(/\./g, '_');
+      const userRef = ref(db, key);
+      onValue(userRef, (snapshot) => {
+        const cloudData = snapshot.val();
+        if (cloudData && Array.isArray(cloudData)) {
+          state.data = cloudData;
+          localStorage.setItem(DATA_KEY, JSON.stringify(cloudData));
+        }
+      });
+      
+    };
+  </script>
   
   <!-- Petite Vue -->
   <script src="./assets/libraries/petite-vue.js" defer></script>
