@@ -203,7 +203,7 @@
           <input
             type="checkbox"
             v-model="item.completed"
-            @change="save()"
+            @change="item.updatedAt = Date.now(); save()"
             :class="{ 'opacity-50': item.completed }"
             class="sr-only peer"
           >

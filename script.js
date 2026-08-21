@@ -271,6 +271,37 @@ async function loadFromCloud(userEmail, isLogin = false) {
   }
 }
 
+function getLatestTimestamp(dataArray) {
+  if (!Array.isArray(dataArray) || dataArray.length === 0) return 0;
+  return Math.max(...dataArray.map(list => {
+    const itemMax = (list.items || []).reduce((max, item) => Math.max(max, item.updatedAt || 0), 0);
+    return Math.max(list.updatedAt || 0, itemMax);
+  }));
+}
+
+async function syncOnStart(userEmail) {
+  try {
+    const res = await fetch(getUserPath(userEmail));
+    const cloudData = await res.json();
+    
+    if (cloudData && Array.isArray(cloudData)) {
+      const localTime = getLatestTimestamp(state.data);
+      const cloudTime = getLatestTimestamp(cloudData);
+      
+      // Save to cloud if local data is newer, else fetch from cloud
+      if (localTime > cloudTime) {
+        await saveToCloud(userEmail);
+      } else {
+        state.data = cloudData;
+        localStorage.setItem(DATA_KEY, JSON.stringify(cloudData));
+      }
+      
+    }
+  } catch (err) {
+    console.error('Cannot sync data:', err);
+  }
+}
+
 // ------------------------------
 // PetiteVue State
 // ------------------------------
@@ -292,7 +323,7 @@ const state = PetiteVue.reactive({
       localStorage.setItem(USER_KEY, JSON.stringify(this.user));
       await loadFromCloud(this.user.email, true);
       if (window.listenToCloudChanges) window.listenToCloudChanges(this.user.email);
-
+      
     } catch (err) {
       console.error("Login Error:", err);
     }
@@ -340,9 +371,16 @@ const state = PetiteVue.reactive({
   save() {
     this.isLocalChange = true;
     setTimeout(() => { this.isLocalChange = false; }, 1000);
-    
     localStorage.setItem(DATA_KEY, JSON.stringify(this.data));
-    if (this.user) saveToCloud(this.user.email);
+    
+    // Save data to cloud (1 second debounce)
+    if (this.user) {
+      clearTimeout(this.save.timer);
+      this.save.timer = setTimeout(() => {
+        saveToCloud(this.user.email);
+      }, 1000);
+    }
+    
   },
   isLocalChange: false,
   
@@ -404,8 +442,9 @@ const state = PetiteVue.reactive({
     setTimeout(() => {
       deleteListEl.classList.remove('fade-out-animation');
       
-      // Delete the list
+      // Delete the list and change updatedAt of the first list (if available)
       this.data = this.data.filter(c => c.id !== id);
+      if (this.data.length > 0) this.data[0].updatedAt = Date.now();
       
       // If the deleted list was the active one
       if (this.activeListId === id) {
@@ -470,10 +509,11 @@ const state = PetiteVue.reactive({
       setTimeout(() => {
         deleteItemEl.classList.remove('fade-out-animation');
         
-        // Delete, save, and vibrate
+        // Delete, save, vibrate, and update timestamp
         list.items.splice(index, 1);
         this.save();
         if ('vibrate' in navigator) navigator.vibrate([20, 50, 20]);
+        list.updatedAt = Date.now();
         
       }, 175);
       
@@ -735,7 +775,7 @@ state.checkWhetherVisited();
 
 // If logged in, load data
 if (state.user) {
-  loadFromCloud(state.user.email, false);
+  syncOnStart(state.user.email);
   if (window.listenToCloudChanges) window.listenToCloudChanges(state.user.email);
 }
 
