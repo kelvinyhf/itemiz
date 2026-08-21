@@ -34,6 +34,7 @@
   <meta name="twitter:image" content="https://itemiz.pages.dev/assets/images/open-graph-image.png">
   
   <!-- iOS Optimization -->
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
@@ -99,6 +100,8 @@
       const key = userEmail.replace(/\./g, '_');
       const userRef = ref(db, key);
       onValue(userRef, (snapshot) => {
+        if (state.isLocalChange) return;
+        
         const cloudData = snapshot.val();
         if (cloudData && Array.isArray(cloudData)) {
           state.data = cloudData;
@@ -253,7 +256,7 @@
           if (dist > 30 && time < 250) closeAboutModal();
         "
         :class="{ 'pt-4': !isTouchDevice }"
-        class="pointer-events-auto w-full max-w-lg bg-white-black p-6 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
+        class="static pointer-events-auto w-full max-w-lg max-h-[80vh] bg-white-black p-6 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
       >
         <div v-if="isTouchDevice" class="w-10 h-1 bg-gray-a4 mx-auto rounded-full"></div>
         
@@ -280,7 +283,7 @@
           if (dist > 30 && time < 250) closeItemModal();
         "
         :class="{ 'pt-4': !isTouchDevice }"
-        class="pointer-events-auto w-full max-w-lg bg-white-black p-4 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
+        class="static pointer-events-auto w-full max-w-lg max-h-[80vh] bg-white-black p-4 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
       >
         <div v-if="isTouchDevice" class="w-10 h-1 bg-gray-a4 mx-auto rounded-full"></div>
         
@@ -357,7 +360,7 @@
           if (dist > 30 && time < 250) closeListModal(activeListId);
         "
         :class="{ 'pt-4': !isTouchDevice }"
-        class="pointer-events-auto w-full max-w-lg bg-white-black p-4 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
+        class="static pointer-events-auto w-full max-w-lg max-h-[80vh] bg-white-black p-4 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
       >
         <div v-if="isTouchDevice" class="w-10 h-1 bg-gray-a4 mx-auto rounded-full"></div>
         
@@ -429,7 +432,7 @@
           if (dist > 30 && time < 250) closeSettingsModal();
         "
         :class="{ 'pt-4': !isTouchDevice }"
-        class="pointer-events-auto w-full max-w-lg bg-white-black p-6 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
+        class="static pointer-events-auto w-full max-w-lg max-h-[80vh] bg-white-black p-6 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] rounded-t-2xl md:rounded-b-2xl hidden flex flex-col gap-2"
       >
         <div v-if="isTouchDevice" class="w-10 h-1 bg-gray-a4 mx-auto rounded-full"></div>
         

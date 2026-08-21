@@ -291,7 +291,8 @@ const state = PetiteVue.reactive({
       // Save user and load cloud data
       localStorage.setItem(USER_KEY, JSON.stringify(this.user));
       await loadFromCloud(this.user.email, true);
-      
+      if (window.listenToCloudChanges) window.listenToCloudChanges(this.user.email);
+
     } catch (err) {
       console.error("Login Error:", err);
     }
@@ -349,9 +350,13 @@ const state = PetiteVue.reactive({
   
   // Save Data
   save() {
+    this.isLocalChange = true;
+    setTimeout(() => { this.isLocalChange = false; }, 1000);
+    
     localStorage.setItem(DATA_KEY, JSON.stringify(this.data));
     if (this.user) saveToCloud(this.user.email);
   },
+  isLocalChange: false,
   
   // Add and Delete List
   addList() {
@@ -741,7 +746,10 @@ window.handleCredentialResponse = (res) => state.login(res);
 state.checkWhetherVisited();
 
 // If logged in, load data
-if (state.user) loadFromCloud(state.user.email, false);
+if (state.user) {
+  loadFromCloud(state.user.email, false);
+  if (window.listenToCloudChanges) window.listenToCloudChanges(state.user.email);
+}
 
 // Initialize toolbar visibility
 if (!state.activeListId) {
@@ -751,7 +759,7 @@ if (!state.activeListId) {
 }
 
 // Initial Save
-state.save();
+localStorage.setItem(DATA_KEY, JSON.stringify(state.data));
 
 // ------------------------------
 // SortableJS - Items
