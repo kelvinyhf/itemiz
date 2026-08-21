@@ -306,20 +306,8 @@ const state = PetiteVue.reactive({
   // Data Object
   data: getData(JSON.parse(localStorage.getItem(DATA_KEY))) || DEFAULT_DATA,
   
-  // Active list Id (from localStorage or first list)
-  activeListId: (() => {
-    const savedId = localStorage.getItem(ACTIVE_LIST_ID_KEY);
-    const data = JSON.parse(localStorage.getItem(DATA_KEY)) || DEFAULT_DATA;
-    
-    // If savedId exists and is valid, return it
-    if (savedId && data && data.some(c => c.id === savedId)) {
-      return savedId;
-    }
-    
-    // Return the first list's id or an empty string if no lists exist
-    return data.length > 0 ? data[0].id : "";
-    
-  })(),
+  // Active list
+  activeListId: "",
   checkActiveList(id) {
     return this.activeListId === id;
   },
@@ -751,12 +739,25 @@ if (state.user) {
   if (window.listenToCloudChanges) window.listenToCloudChanges(state.user.email);
 }
 
-// Initialize toolbar visibility
-if (!state.activeListId) {
-  showChild(null, bottomBar);
-} else {
-  showChild(toolbar, bottomBar, { inAnim: 'slide-in-animation-fast' });
-}
+// Active list id init (from localStorage or first list)
+state.activeListId = (() => {
+  const savedId = localStorage.getItem(ACTIVE_LIST_ID_KEY);
+  
+  // If savedId exists and is valid, return it
+  if (savedId && state.data && state.data.some(c => c.id === savedId)) {
+    return savedId;
+  }
+  
+  // Get the first list's id or an empty string if no lists exist
+  const newId = state.data.length > 0 ? state.data[0].id : "";
+  if (newId === "") {
+    showChild(null, bottomBar);
+  } else {
+    showChild(toolbar, bottomBar, { inAnim: 'slide-in-animation-fast' });
+  }
+  
+  return newId;
+})();
 
 // Initial Save
 localStorage.setItem(DATA_KEY, JSON.stringify(state.data));
@@ -931,5 +932,9 @@ Sortable.create(topBar, {
 // Service Worker
 // ------------------------------
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js');
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(error => {
+      console.error('Service Worker register failed:', error);
+    });
+  });
 }
