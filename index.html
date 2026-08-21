@@ -138,10 +138,11 @@
   <main class="h-full flex flex-col justify-between overscroll-none">
     
     <!-- Top Bar -->
-    <section onwheel="this.scrollLeft += event.deltaY" id="top-bar" class="shrink-0 relative bg-gray-2 border-b border-gray-2 pt-[env(safe-area-inset-top)] flex items-end gap-4 overflow-x-auto overflow-y-hidden overscroll-none no-scrollbar">
+    <nav onwheel="this.scrollLeft += event.deltaY" id="top-bar" aria-label="List tabs" class="shrink-0 relative bg-gray-2 border-b border-gray-2 pt-[env(safe-area-inset-top)] flex items-end gap-4 overflow-x-auto overflow-y-hidden overscroll-none no-scrollbar">
       
       <!-- List Tabs -->
-      <div
+      <button
+        type="button"
         v-for="list in data"
         :key="list.id"
         :id="list.id"
@@ -159,12 +160,11 @@
         })()"
         :class="{ 'font-semibold scale-105': checkActiveList(list.id) }"
         class="tabs h-[75%] text-sm bg-gray-1 shadow-[0_-1px_5px_rgba(0,0,0,0.01)] px-4 py-2 first:ml-4 last:mr-4 rounded-t-lg flex justify-center items-center shrink-0 whitespace-nowrap"
-      >
-        <span>{{ list.name || 'New List' }}</span>
-      </div>
+      >{{ list.name || 'New List' }}</button>
       
       <!-- Add List Button -->
       <button
+        type="button"
         @click="addList()"
         class="group sticky top-0 right-0 ml-auto h-full bg-white-black text-sm rounded-l-xl p-4 shadow-[-2px_0_5px_rgba(0,0,0,0.02)] shrink-0 flex items-center gap-2 transition-shadow whitespace-nowrap cursor-pointer hover:shadow-[-2px_0_0_5px_rgba(0,0,0,0.04)] active:shadow-[-2px_0_0_5px_rgba(0,0,0,0.04)] dark:hover:shadow-[-2px_0_0_5px_rgba(255,255,255,0.04)] dark:active:shadow-[-2px_0_0_5px_rgba(255,255,255,0.04)]"
       >
@@ -172,13 +172,13 @@
         <span :class="!isTouchDevice ?'max-w-0 opacity-0 overflow-hidden transition-[max-width,opacity] duration-250 group-hover:opacity-100 group-hover:max-w-xs' : 'max-w-xs opacity-100'" class="text-gray-11 font-medium">Add</span>
       </button>
       
-    </section>
+    </nav>
     
     <!-- Items Container (Lists) -->
-    <section id="items-container" class="flex-1 flex flex-col overflow-x-hidden overflow-y-auto">
+    <ul id="items-container" class="flex-1 flex flex-col overflow-x-hidden overflow-y-auto">
       
       <!-- Items -->
-      <div
+      <li
         v-for="item in getItemsById(activeListId)"
         :key="item.id"
         :id="item.id"
@@ -211,7 +211,7 @@
         
         <!-- Title and Description -->
         <div class="flex-1 min-w-0" :class="{ 'opacity-50': item.completed }">
-          <h2 class="font-medium [overflow-wrap:anywhere]">{{ item.title || 'New Item' }}</h2>
+          <span class="font-medium [overflow-wrap:anywhere]">{{ item.title || 'New Item' }}</span>
           <p class="text-sm text-gray-11 line-clamp-3 [overflow-wrap:anywhere] [white-space:pre-line]">{{ item.desc }}</p>
         </div>
         
@@ -222,10 +222,11 @@
           class="shrink-0 text-xs text-gray-11 ml-2"
         >{{ formatDate(item.date) }}</span>
         
-      </div>
-
+      </li>
+      
       <!-- Placeholder -->
-      <div
+      <li
+        role="status"
         v-if="!activeListId || getItemsById(activeListId).length === 0"
         :style="{ color: (PALETTE[getListById(activeListId)?.color] || PALETTE['none']).textColor }"
         class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center flex flex-col items-center opacity-75"
@@ -234,15 +235,16 @@
         <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5H3"/><path d="M16 12H3"/><path d="M11 19H3"/><path d="m15 18 2 2 4-4"/></svg>
         <span class="font-semibold">{{ activeListId ? 'All caught up!' : 'No list selected' }}</span>
         <span class="text-sm font-medium">{{ activeListId ? 'Click the "+" button to add items' : 'Create or select a list to get started' }}</span>
-      </div>
+      </li>
       
-    </section>
+    </ul>
     
     <!-- Modals -->
-    <section id="modals" class="fixed inset-0 z-99 p-0 md:p-4 flex justify-center items-end md:items-start md:mt-8 pointer-events-none">
+    <div id="modals" aria-live="polite" class="fixed inset-0 z-99 p-0 md:p-4 flex justify-center items-end md:items-start md:mt-8 pointer-events-none">
       
       <!-- About Modal -->
-      <div
+      <dialog
+        open
         id="about-modal"
         @touchstart="startY = $event.touches[0].clientY; startTime = Date.now()"
         @touchend="
@@ -256,18 +258,20 @@
         <div v-if="isTouchDevice" class="w-10 h-1 bg-gray-a4 mx-auto rounded-full"></div>
         
         <!-- Content -->
-        <h1 class="text-2xl font-bold">Itemiz</h1>
+        <h2 class="text-2xl font-bold">Itemiz</h2>
         <p>A minimalist, lightweight todo list web app designed with a simple and clean interface to help you organize daily tasks effortlessly.</p>
         <p class="mb-4">Made with &#9825; by KelvinY</p>
         <button
+          type="button"
           @click="closeAboutModal()"
           class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer hover:bg-gray-10 hover:text-gray-2 active:bg-gray-10 active:text-gray-2"
         >Close</button>
         
-      </div>
+      </dialog>
       
       <!-- Item Modal -->
-      <div
+      <dialog
+        open
         id="item-modal"
         @touchstart="startY = $event.touches[0].clientY; startTime = Date.now()"
         @touchend="
@@ -324,23 +328,27 @@
         <!-- Action Buttons -->
         <div class="flex justify-center items-center gap-4 p-2">
           <button
+            type="button"
             @click="deleteItemById(activeListId, editingItem.id); closeItemModal();"
             class="shrink-0 p-2 bg-red-2 text-red-11 border border-red-3 font-medium rounded-xl cursor-pointer hover:bg-red-4 hover:text-red-9 active:bg-red-4 active:text-red-9"
           ><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
           <button
+            type="button"
             @click="closeItemModal(true)"
             class="flex-1 p-2 bg-gray-1 text-gray-12 border border-gray-3 font-medium rounded-xl cursor-pointer hover:bg-gray-4 hover:text-gray-11 active:bg-gray-4 active:text-gray-11"
           >Cancel</button>
           <button
+            type="button"
             @click="saveItemModal(activeListId)"
             class="flex-1 p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer hover:bg-gray-10 hover:text-gray-2 active:bg-gray-10 active:text-gray-2"
           >Save</button>
         </div>
         
-      </div>
+      </dialog>
       
       <!-- List Modal -->
-      <div
+      <dialog
+        open
         id="list-modal"
         @touchstart="startY = $event.touches[0].clientY; startTime = Date.now()"
         @touchend="
@@ -380,6 +388,7 @@
         <!-- Action Buttons -->
         <div class="flex justify-center items-center gap-4 p-2">
           <button
+            type="button"
             @click="
               if (!confirmDelete) {
                 confirmDelete = true;
@@ -396,19 +405,22 @@
             <span :class="confirmDelete ? 'max-w-md opacity-100 ml-2 mr-1' : 'max-w-0 opacity-0'" class="block text-md font-medium transition-max-w duration-200 overflow-hidden whitespace-nowrap">Sure?</span>
           </button>
           <button
+            type="button"
             @click="closeListModal()"
             class="flex-1 p-2 bg-gray-1 text-gray-12 border border-gray-3 font-medium rounded-xl cursor-pointer hover:bg-gray-4 hover:text-gray-11 active:bg-gray-4 active:text-gray-11"
           >Cancel</button>
           <button
+            type="button"
             @click="saveListModal(activeListId)"
             class="flex-1 p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer hover:bg-gray-10 hover:text-gray-2 active:bg-gray-10 active:text-gray-2"
           >Save</button>
         </div>
         
-      </div>
+      </dialog>
       
       <!-- Settings Modal -->
-      <div
+      <dialog
+        open
         id="settings-modal"
         @touchstart="startY = $event.touches[0].clientY; startTime = Date.now()"
         @touchend="
@@ -438,7 +450,7 @@
         </div>
         <div v-else class="flex items-center justify-between p-4 border-b border-gray-10 my-2">
           <span class="text-sm font-medium">Logged as <span class="font-semibold">{{ user.name }}</span></span>
-          <button @click="logout()" class="text-sm text-red-11 font-medium cursor-pointer">Logout</button>
+          <button type="button" @click="logout()" class="text-sm text-red-11 font-medium cursor-pointer">Logout</button>
         </div>
         
         <!-- Import/Export Data --->
@@ -453,9 +465,9 @@
             >
           </label>
           <span>|</span>
-          <button 
-            type="button" 
-            @click="exportData()" 
+          <button
+            type="button"
+            @click="exportData()"
             class="flex-1 flex justify-center cursor-pointer"
           >
             <span class="text-red-12 text-sm font-medium border-b border-red-11">Export Data</span>
@@ -464,22 +476,23 @@
         
         <!-- Action Buttons -->
         <button
+          type="button"
           @click="closeSettingsModal()"
           class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer hover:bg-gray-10 hover:text-gray-2 active:bg-gray-10 active:text-gray-2"
         >Close</button>
         
-      </div>
+      </dialog>
       
-    </section>
+    </div>
     
     <!-- Bottom Bar -->
-    <section id="bottom-bar" class="fixed bottom-0 left-0 w-full z-97 min-h-[125px] pb-[env(safe-area-inset-bottom)] flex justify-center items-center bg-gradient-to-b from-transparent to-gray-a3 pointer-events-none">
+    <footer id="bottom-bar" class="fixed bottom-0 left-0 w-full z-97 min-h-[125px] pb-[env(safe-area-inset-bottom)] flex justify-center items-center bg-gradient-to-b from-transparent to-gray-a3 pointer-events-none">
       
       <!-- Toolbar -->
-      <div id="toolbar" class="pointer-events-auto touch-manipulation bg-white-black rounded-2xl shadow-[0_2px_5px_var(--alpha-5)] px-4 py-2 flex gap-4">
-        <button @click="openAboutModal()" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></button>
-        <button @click="addItem(activeListId)" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 flex items-center cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
-        <button @click="openSettingsModal()" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg></button>
+      <div id="toolbar" role="toolbar" class="pointer-events-auto touch-manipulation bg-white-black rounded-2xl shadow-[0_2px_5px_var(--alpha-5)] px-4 py-2 flex gap-4">
+        <button type="button" aria-label="About Itemiz" @click="openAboutModal()" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></button>
+        <button type="button" aria-label="Add Item" @click="addItem(activeListId)" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 flex items-center cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
+        <button type="button" aria-label="Settings" @click="openSettingsModal()" class="block text-lg text-gray-11 bg-gray-1 rounded-xl px-4 py-2 cursor-pointer hover:bg-gray-3 hover:text-gray-12 active:text-gray-12 active:bg-gray-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg></button>
       </div>
       
       <!-- Trash Can -->
@@ -487,7 +500,7 @@
         <span class="text-red-9 text-sm">Drop here to delete</span>
       </div>
       
-    </section>
+    </footer>
     
   </main>
   
