@@ -237,7 +237,7 @@ async function saveToCloud(userEmail) {
   } catch (err) {
     console.error(err);
   } finally {
-    setTimeout(() => { this.isLocalChange = false; }, 1000);
+    setTimeout(() => { this.isLocalChange = false; }, 500);
   }
 }
 
@@ -386,7 +386,7 @@ const state = PetiteVue.reactive({
       clearTimeout(this.save.timer);
       this.save.timer = setTimeout(() => {
         saveToCloud(this.user.email);
-      }, 1000);
+      }, 500);
     }
     
   },
@@ -784,6 +784,8 @@ state.checkWhetherVisited();
 if (state.user) {
   syncOnStart(state.user.email);
   if (window.listenToCloudChanges) window.listenToCloudChanges(state.user.email);
+  alert(getUserPath(state.user.email));
+  alert(state.user.token);
 }
 
 // Active list id init (from localStorage or first list)
