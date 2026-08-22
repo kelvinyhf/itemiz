@@ -217,11 +217,13 @@ const FIREBASE_URL = 'https://itemiz-db-default-rtdb.firebaseio.com/';
 
 function getUserPath(email) {
   const key = email.replace(/\./g, '_');
-  return `${FIREBASE_URL}/${key}.json`;
+  const token = state.user.token ? `?auth=${state.user.token}` : '';
+  return `${FIREBASE_URL}/${key}.json${token}`;
 }
 
 async function saveToCloud(userEmail) {
   try {
+    this.isLocalChange = true;
     
     // Save data on cloud
     const res = await fetch(getUserPath(userEmail), {
@@ -234,6 +236,8 @@ async function saveToCloud(userEmail) {
     
   } catch (err) {
     console.error(err);
+  } finally {
+    setTimeout(() => { this.isLocalChange = false; }, 1000);
   }
 }
 
@@ -316,7 +320,8 @@ const state = PetiteVue.reactive({
       const payload = parseJwt(response.credential);
       this.user = {
         name: payload.name,
-        email: payload.email
+        email: payload.email,
+        token: response.credential
       };
       
       // Save user and load cloud data
@@ -374,7 +379,6 @@ const state = PetiteVue.reactive({
   
   // Save Data
   save() {
-    this.isLocalChange = true;
     localStorage.setItem(DATA_KEY, JSON.stringify(this.data));
     
     // Save data to cloud (1 second debounce)
@@ -385,7 +389,6 @@ const state = PetiteVue.reactive({
       }, 1000);
     }
     
-    setTimeout(() => { this.isLocalChange = false; }, 1000);
   },
   isLocalChange: false,
   
