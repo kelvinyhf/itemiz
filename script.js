@@ -8,8 +8,8 @@ const HAS_VISITED_KEY =  'Itemiz_has_visited_v1';
 
 const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
 const isMobile = () => window.matchMedia('(width < 768px)').matches;
-const getOutDuration = () => (isMobile() ? 225 : 75);
-const getFastOutDuration = () => (isMobile() ? 125 : 50);
+const getOutDuration = () => (isMobile() && isTouchDevice ? 225 : 75);
+const getFastOutDuration = () => (isMobile() && isTouchDevice ? 125 : 25);
 
 // Color palette for item colors
 const PALETTE = {
@@ -819,13 +819,14 @@ Sortable.create(itemsContainer, {
   fallbackOnBody: true,
   
   // Delay
-  delay: isTouchDevice ? 250 : 0, // IMPROVEMENTS when dragging with mouse
+  delay: isTouchDevice ? 250 : 0,
   delayOnTouchOnly: false,
   touchStartThreshold: 5,
+  fallbackTolerance: 10,
   
   // Auto Scroll
   scroll: true,
-  scrollSensitivity: 150, // IMPROVEMENTS when auto scrolling down (trash can problem)
+  scrollSensitivity: 150,
   scrollSpeed: 10,
   
   // If is touch device, vibrate and show trash can when choosing item
@@ -926,15 +927,17 @@ Sortable.create(topBar, {
   fallbackOnBody: true,
   
   // Delay
-  delay: isTouchDevice ? 150 : 0, // IMPROVEMENTS when dragging with mouse
+  delay: isTouchDevice ? 150 : 0,
   delayOnTouchOnly: false,
   touchStartThreshold: 5,
+  fallbackTolerance: 10,
   
   // Auto Scroll
-  scroll: true, // IMPROVEMENTS auto scroll sometimes not working
+  scroll: true,
   scrollSensitivity: 100,
-  scrollSpeed: 5,
-  
+  scrollSpeed: 10,
+  bubbleScroll: true,
+
   // If is touch device, vibrate when choosing list
   onChoose() {
     if ('vibrate' in navigator) navigator.vibrate(30);

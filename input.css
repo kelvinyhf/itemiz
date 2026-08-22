@@ -434,11 +434,11 @@
 }
 
 /* Desktop Animations */
-@media (width >= 768px) {
+@media (width >= 768px), (pointer: fine) {
   .slide-in-animation  { animation: slideInQuick 0.1s ease-out; }
-  .slide-in-animation-fast { animation: slideIn 0.075s ease-out; }
+  .slide-in-animation-fast { animation: slideInQuick 0.05s ease-out; }
   .slide-out-animation { animation: slideOutQuick 0.1s linear; }
-  .slide-out-animation-fast { animation: slideOut 0.075s linear; }
+  .slide-out-animation-fast { animation: slideOutQuick 0.05s linear; }
 }
 
 /* SortableJS */
