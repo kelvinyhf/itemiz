@@ -322,6 +322,7 @@ const state = PetiteVue.reactive({
       // Save user and load cloud data
       localStorage.setItem(USER_KEY, JSON.stringify(this.user));
       await loadFromCloud(this.user.email, true);
+      await saveToCloud(this.user.email);
       if (window.listenToCloudChanges) window.listenToCloudChanges(this.user.email);
       
     } catch (err) {
@@ -353,7 +354,11 @@ const state = PetiteVue.reactive({
     if (id === "") {
       showChild(null, bottomBar, { outAnim: 'slide-out-animation-fast', duration: getFastOutDuration() });
     } else {
-      showChild(toolbar, bottomBar, { inAnim: 'slide-in-animation-fast' });
+      if (toolbar.classList.contains('hidden')) {
+        showChild(toolbar, bottomBar, { inAnim: 'slide-in-animation-fast' });
+      } else {
+        showChild(toolbar, bottomBar);
+      }
     }
     
   },
@@ -370,7 +375,6 @@ const state = PetiteVue.reactive({
   // Save Data
   save() {
     this.isLocalChange = true;
-    setTimeout(() => { this.isLocalChange = false; }, 1000);
     localStorage.setItem(DATA_KEY, JSON.stringify(this.data));
     
     // Save data to cloud (1 second debounce)
@@ -381,6 +385,7 @@ const state = PetiteVue.reactive({
       }, 1000);
     }
     
+    setTimeout(() => { this.isLocalChange = false; }, 1000);
   },
   isLocalChange: false,
   
@@ -770,7 +775,6 @@ const state = PetiteVue.reactive({
 // Initialization
 // ------------------------------
 PetiteVue.createApp(state).mount('body');
-window.handleCredentialResponse = (res) => state.login(res);
 state.checkWhetherVisited();
 
 // If logged in, load data
@@ -782,21 +786,29 @@ if (state.user) {
 // Active list id init (from localStorage or first list)
 state.activeListId = (() => {
   const savedId = localStorage.getItem(ACTIVE_LIST_ID_KEY);
+  const isValidSavedId = savedId && state.data && state.data.some(c => c.id === savedId);
+  const targetId = isValidSavedId ? savedId : (state.data.length > 0 ? state.data[0].id : "");
   
-  // If savedId exists and is valid, return it
-  if (savedId && state.data && state.data.some(c => c.id === savedId)) {
-    return savedId;
-  }
-  
-  // Get the first list's id or an empty string if no lists exist
-  const newId = state.data.length > 0 ? state.data[0].id : "";
-  if (newId === "") {
+  if (targetId === "") {
     showChild(null, bottomBar);
   } else {
-    showChild(toolbar, bottomBar, { inAnim: 'slide-in-animation-fast' });
+    showChild(toolbar, bottomBar);
   }
   
-  return newId;
+  if (targetId) {
+    setTimeout(() => {
+      const activeEl = document.getElementById(targetId);
+      if (activeEl) {
+        activeEl.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center'
+        });
+      }
+    }, 100);
+  }
+  
+  return targetId;
 })();
 
 // Initial Save
@@ -822,7 +834,7 @@ Sortable.create(itemsContainer, {
   delay: isTouchDevice ? 250 : 0,
   delayOnTouchOnly: false,
   touchStartThreshold: 5,
-  fallbackTolerance: 10,
+  fallbackTolerance: !isTouchDevice ? 10 : 0,
   
   // Auto Scroll
   scroll: true,
@@ -930,7 +942,7 @@ Sortable.create(topBar, {
   delay: isTouchDevice ? 150 : 0,
   delayOnTouchOnly: false,
   touchStartThreshold: 5,
-  fallbackTolerance: 10,
+  fallbackTolerance: !isTouchDevice ? 10 : 0,
   
   // Auto Scroll
   scroll: true,

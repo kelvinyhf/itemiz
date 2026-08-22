@@ -51,7 +51,7 @@
       document.getElementById('apple-touch-icon').href = isDark ? './assets/images/apple-touch-icon-dark.png' : './assets/images/apple-touch-icon.png';
     }
     updateIcon();
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateIcon());
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateIcon);
   </script>
   
   <!-- CSS -->
@@ -90,6 +90,11 @@
   <script src="./script.js" defer></script>
   
   <!-- GIS and Firebase -->
+  <script>
+    window.handleCredentialResponse = function(res) {
+      if (state) state.login(res);
+    };
+  </script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -247,7 +252,7 @@
     <div id="modals" aria-live="polite" class="fixed inset-0 z-99 p-0 md:p-4 flex justify-center items-end md:items-start md:mt-8 pointer-events-none">
       
       <!-- About Modal -->
-      <dialog
+      <div
         id="about-modal"
         @touchstart="startY = $event.touches[0].clientY; startTime = Date.now()"
         @touchend="
@@ -270,10 +275,10 @@
           class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer hover:bg-gray-10 hover:text-gray-2 active:bg-gray-10 active:text-gray-2"
         >Close</button>
         
-      </dialog>
+      </div>
       
       <!-- Item Modal -->
-      <dialog
+      <div
         id="item-modal"
         @touchstart="startY = $event.touches[0].clientY; startTime = Date.now()"
         @touchend="
@@ -348,10 +353,10 @@
           >Save</button>
         </div>
         
-      </dialog>
+      </div>
       
       <!-- List Modal -->
-      <dialog
+      <div
         id="list-modal"
         @touchstart="startY = $event.touches[0].clientY; startTime = Date.now()"
         @touchend="
@@ -419,10 +424,10 @@
           >Save</button>
         </div>
         
-      </dialog>
+      </div>
       
       <!-- Settings Modal -->
-      <dialog
+      <div
         id="settings-modal"
         @touchstart="startY = $event.touches[0].clientY; startTime = Date.now()"
         @touchend="
@@ -480,7 +485,7 @@
           class="w-full p-2 bg-gray-12 text-gray-1 font-medium rounded-xl cursor-pointer hover:bg-gray-10 hover:text-gray-2 active:bg-gray-10 active:text-gray-2"
         >Close</button>
         
-      </dialog>
+      </div>
       
     </div>
     
